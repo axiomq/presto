@@ -14,8 +14,10 @@
 package com.facebook.presto.server.protocol;
 
 import com.facebook.airlift.concurrent.BoundedExecutor;
+import com.facebook.airlift.log.Logger;
 import com.facebook.airlift.stats.TimeStat;
 import com.facebook.presto.client.QueryResults;
+import com.facebook.presto.features.config.FeatureToggle;
 import com.facebook.presto.server.ForStatementResource;
 import com.facebook.presto.server.ServerConfig;
 import com.facebook.presto.spi.QueryId;
@@ -47,6 +49,7 @@ import static com.facebook.presto.server.protocol.QueryResourceUtil.toResponse;
 import static com.facebook.presto.server.security.RoleType.USER;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.net.HttpHeaders.X_FORWARDED_PROTO;
+import static com.google.common.util.concurrent.Futures.immediateFuture;
 import static com.google.common.util.concurrent.Futures.transform;
 import static com.google.common.util.concurrent.Futures.transformAsync;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
@@ -58,6 +61,8 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 @RolesAllowed(USER)
 public class ExecutingStatementResource
 {
+    private static final Logger log = Logger.get(ExecutingStatementResource.class);
+
     private static final Duration MAX_WAIT_TIME = new Duration(1, SECONDS);
     private static final Ordering<Comparable<Duration>> WAIT_ORDERING = Ordering.natural().nullsLast();
     private static final DataSize DEFAULT_TARGET_RESULT_SIZE = new DataSize(1, MEGABYTE);
@@ -66,19 +71,22 @@ public class ExecutingStatementResource
     private final BoundedExecutor responseExecutor;
     private final LocalQueryProvider queryProvider;
     private final boolean compressionEnabled;
-    private final QueryBlockingRateLimiter queryRateLimiter;
+    private final QueryRateLimiter queryRateLimiter;
+    private final FeatureToggle featureToggle;
 
     @Inject
     public ExecutingStatementResource(
             @ForStatementResource BoundedExecutor responseExecutor,
             LocalQueryProvider queryProvider,
             ServerConfig serverConfig,
-            QueryBlockingRateLimiter queryRateLimiter)
+            QueryRateLimiter queryRateLimiter,
+            FeatureToggle featureToggle)
     {
         this.responseExecutor = requireNonNull(responseExecutor, "responseExecutor is null");
         this.queryProvider = requireNonNull(queryProvider, "queryProvider is null");
         this.compressionEnabled = requireNonNull(serverConfig, "serverConfig is null").isQueryResultsCompressionEnabled();
         this.queryRateLimiter = requireNonNull(queryRateLimiter, "queryRateLimiter is null");
+        this.featureToggle = featureToggle;
     }
 
     @Managed
@@ -112,8 +120,16 @@ public class ExecutingStatementResource
             proto = uriInfo.getRequestUri().getScheme();
         }
 
+        ListenableFuture<Double> acquirePermitAsync;
         Query query = queryProvider.getQuery(queryId, slug);
-        ListenableFuture<Double> acquirePermitAsync = queryRateLimiter.acquire(queryId);
+        if (featureToggle.isFeatureEnabled(QueryBlockingRateLimiter.class)) {
+            log.info("QueryBlockingRateLimiter is ENABLED");
+            acquirePermitAsync = queryRateLimiter.acquire(queryId);
+        }
+        else {
+            log.info("QueryBlockingRateLimiter is DISABLED");
+            acquirePermitAsync = immediateFuture(0.0);
+        }
         String effectiveFinalProto = proto;
         DataSize effectiveFinalTargetResultSize = targetResultSize;
         ListenableFuture<QueryResults> waitForResultsAsync = transformAsync(

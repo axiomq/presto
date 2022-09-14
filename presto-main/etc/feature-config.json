@@ -1,0 +1,13 @@
+[
+  {
+    "featureId": "rate limiter",
+    "enabled": false,
+    "featureClass": "com.facebook.presto.server.protocol.RateLimiter",
+    "currentInstance": "com.facebook.presto.server.protocol.AnotherQueryBlockingRateLimiter",
+    "featureInstances": ["com.facebook.presto.server.protocol.QueryBlockingRateLimiter"],
+    "featureToggleStrategy": {
+
+
+    }
+  }
+]
