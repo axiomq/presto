@@ -48,6 +48,7 @@ import static java.util.Objects.requireNonNull;
  * When not having enough tokens available, it uses the delayed processing method.
  */
 public class QueryBlockingRateLimiter
+        implements QueryRateLimiter
 {
     private final long rateLimiterBucketMaxSize;
     private final ListeningExecutorService rateLimiterExecutorService;
@@ -72,6 +73,7 @@ public class QueryBlockingRateLimiter
      * Fall back to delayed processing method to acquire a permit, in a separate thread pool
      * Internal guava rate limiter returns time spent sleeping to enforce rate, in seconds; 0.0 if not rate-limited, we use a future to wrap around that.
      */
+    @Override
     public ListenableFuture<Double> acquire(QueryId queryId)
     {   // if rateLimitBucketMaxSize < 0, we disable rate limiting by returning immediately
         if (rateLimiterBucketMaxSize < 0) {
@@ -96,11 +98,13 @@ public class QueryBlockingRateLimiter
         return rateLimiterTriggeredCounter;
     }
 
+    @Override
     public TimeStat getRateLimiterBlockTime()
     {
         return rateLimiterBlockTime;
     }
 
+    @Override
     public void addRateLimiterBlockTime(Duration duration)
     {
         rateLimiterBlockTime.add(duration);
