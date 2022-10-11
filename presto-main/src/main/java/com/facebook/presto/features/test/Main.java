@@ -21,6 +21,8 @@ import com.google.inject.Injector;
 
 public class Main
 {
+    private Main() {}
+
     public static void main(String[] args)
     {
         String feature01Impl02ID = "feature01Impl02";
@@ -47,10 +49,8 @@ public class Main
         feature1.changeDefaultInstance(feature01Impl01ID);
         service.test();
 */
-
 //        TestService testService = guice.getInstance(TestService.class);
 //        testService.test();
 //        testService.test();
-
     }
 }

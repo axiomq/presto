@@ -11,18 +11,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.facebook.presto.server.protocol;
+package com.facebook.presto.features.config;
 
-import com.facebook.airlift.stats.TimeStat;
-import com.facebook.presto.spi.QueryId;
-import com.google.common.util.concurrent.ListenableFuture;
-import io.airlift.units.Duration;
-
-public interface QueryRateLimiter
+public class Util
 {
-    TimeStat getRateLimiterBlockTime();
+    private Util() {}
 
-    ListenableFuture<Double> acquire(QueryId queryId);
-
-    void addRateLimiterBlockTime(Duration duration);
+    public static Class classForName(String className)
+    {
+        try {
+            return Class.forName(className);
+        }
+        catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

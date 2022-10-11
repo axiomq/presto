@@ -13,74 +13,19 @@
  */
 package com.facebook.presto.features.config;
 
-import com.facebook.airlift.json.JsonObjectMapperProvider;
-import com.facebook.airlift.log.Logger;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static java.lang.String.format;
-import static java.nio.file.Files.exists;
-import static java.nio.file.Files.isReadable;
+import static com.facebook.presto.features.config.ConfigurationParser.parseConfiguration;
 
 public class FileBasedFeatureToggle
         implements FeatureToggle
 {
-
-    private static final Logger log = Logger.get(FileBasedFeatureToggle.class);
-
-    Map<String, FeatureConfiguration> featureConfigurationMap = new ConcurrentHashMap<>();
+    private final Map<String, FeatureConfiguration> featureConfigurationMap;
 
     public FileBasedFeatureToggle(FeatureToggleConfig config)
     {
-        parseConfiguration(config);
-    }
-
-    private void parseConfiguration(FeatureToggleConfig config)
-    {
-        if ("JSON".equalsIgnoreCase(config.getConfigType())) {
-            parseJson(config);
-        }
-        else if ("PROPERTIES".equalsIgnoreCase(config.getConfigType())) {
-            parseProperties(config);
-        }
-    }
-
-    private void parseProperties(FeatureToggleConfig config)
-    {
-
-    }
-
-    private void parseJson(FeatureToggleConfig config)
-    {
-        log.info("parsing configuration %s", config.getConfigSource());
-        Path path = Paths.get(config.getConfigSource());
-
-        if (!path.isAbsolute()) {
-            path = path.toAbsolutePath();
-        }
-        checkArgument(exists(path), "File does not exist: %s", path);
-        checkArgument(isReadable(path), "File is not readable: %s", path);
-        try {
-            ObjectMapper mapper = new JsonObjectMapperProvider().get()
-                    .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-            List<FeatureConfiguration> configurationList = Arrays.asList(mapper.readValue(path.toFile(), FeatureConfiguration[].class));
-            configurationList.forEach(f ->
-                    featureConfigurationMap.put(f.getFeatureClass(), f)
-            );
-        }
-        catch (IOException e) {
-            throw new IllegalArgumentException(format("Invalid JSON file '%s'", path), e);
-        }
+        this.featureConfigurationMap = parseConfiguration(config);
     }
 
     @Override
@@ -99,5 +44,11 @@ public class FileBasedFeatureToggle
     public Collection<FeatureConfiguration> getFeatureConfigurations()
     {
         return featureConfigurationMap.values();
+    }
+
+    @Override
+    public String getCurrentInstance(String featureClassName)
+    {
+        return featureConfigurationMap.get(featureClassName).getCurrentInstance();
     }
 }

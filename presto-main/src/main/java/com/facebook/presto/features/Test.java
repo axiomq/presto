@@ -18,10 +18,10 @@ import com.google.inject.Inject;
 
 public class Test
 {
+    private Test() {}
 
     public static void main(String[] args)
     {
-
     }
 
     private interface MyCoolClass

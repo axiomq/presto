@@ -20,4 +20,6 @@ public interface FeatureToggle
     <T> boolean isFeatureEnabled(Class<T> clazz);
 
     Collection<FeatureConfiguration> getFeatureConfigurations();
+
+    String getCurrentInstance(String featureClassName);
 }

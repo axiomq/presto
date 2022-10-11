@@ -19,26 +19,28 @@ import static java.util.Objects.requireNonNull;
 
 public class FeatureToggleBinder
 {
-
     private final Binder binder;
 
-    private FeatureToggleBinder(Binder binder)
+    private FeatureToggleBinder(Binder binder, FeatureToggle featureToggle)
     {
         this.binder = requireNonNull(binder, "binder is null").skipSources(getClass());
     }
 
     public static FeatureToggleBinder featureToggleBinder(Binder binder)
     {
-        return new FeatureToggleBinder(binder);
+        FeatureToggle featureToggle = binder.getProvider(FeatureToggle.class).get();
+        return new FeatureToggleBinder(binder, featureToggle);
     }
 
     public void bindAll(FeatureToggle featureToggle)
-    {/*
+    {
+        /*
         for (Feature<?> f : featureToggle.getFeatures().getAll()) {
             Class<?> featureClass = f.getConfiguration().getFeatureClass();
             bindUnchecked(featureClass, f);
         }*/
-    }/*
+    }
+    /*
 
     public void bindUnchecked(Class clazz, Feature feature)
     {

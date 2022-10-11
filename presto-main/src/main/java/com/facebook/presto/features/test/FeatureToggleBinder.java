@@ -54,5 +54,4 @@ public class FeatureToggleBinder
             binder.bind(clazz).toProvider(() -> feature.getDefaultInstance().getInstance());
         }
     }
-
 }

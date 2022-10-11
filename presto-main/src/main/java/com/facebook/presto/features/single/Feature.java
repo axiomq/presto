@@ -11,18 +11,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.facebook.presto.server.protocol;
+package com.facebook.presto.features.single;
 
-import com.facebook.airlift.stats.TimeStat;
-import com.facebook.presto.spi.QueryId;
-import com.google.common.util.concurrent.ListenableFuture;
-import io.airlift.units.Duration;
-
-public interface QueryRateLimiter
+public class Feature
 {
-    TimeStat getRateLimiterBlockTime();
-
-    ListenableFuture<Double> acquire(QueryId queryId);
-
-    void addRateLimiterBlockTime(Duration duration);
 }

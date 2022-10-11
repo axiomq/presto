@@ -22,6 +22,7 @@ import com.facebook.presto.features.store.InMemoryFeatureStore;
 
 public class Main
 {
+    private Main() {}
 
     public static void main(String[] args)
     {
@@ -80,9 +81,7 @@ public class Main
 
     static void json()
     {
-
 /*
-
         Feature feature = new Feature(UUID.randomUUID().toString(), "Feature Description", true, new FeatureConfiguration());
 
         String json = feature.toJson();
@@ -95,10 +94,6 @@ public class Main
         json = feature.toJson();
         System.out.println(feature);
         System.out.println(json);
-*/
-/*
-
-
         Feature01Impl01 feature01Impl01 = new Feature01Impl01();
         Feature01Impl02 feature01Impl02 = new Feature01Impl02();
 
@@ -120,6 +115,5 @@ public class Main
         System.out.println(json);
 
 */
-
     }
 }

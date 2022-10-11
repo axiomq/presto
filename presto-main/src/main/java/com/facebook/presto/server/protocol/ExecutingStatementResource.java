@@ -23,6 +23,7 @@ import com.facebook.presto.server.ServerConfig;
 import com.facebook.presto.spi.QueryId;
 import com.google.common.collect.Ordering;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.inject.Provider;
 import io.airlift.units.DataSize;
 import io.airlift.units.Duration;
 import org.weakref.jmx.Managed;
@@ -71,7 +72,7 @@ public class ExecutingStatementResource
     private final BoundedExecutor responseExecutor;
     private final LocalQueryProvider queryProvider;
     private final boolean compressionEnabled;
-    private final QueryRateLimiter queryRateLimiter;
+    private final Provider<QueryRateLimiter> queryRateLimiter;
     private final FeatureToggle featureToggle;
 
     @Inject
@@ -79,7 +80,7 @@ public class ExecutingStatementResource
             @ForStatementResource BoundedExecutor responseExecutor,
             LocalQueryProvider queryProvider,
             ServerConfig serverConfig,
-            QueryRateLimiter queryRateLimiter,
+            Provider<QueryRateLimiter> queryRateLimiter,
             FeatureToggle featureToggle)
     {
         this.responseExecutor = requireNonNull(responseExecutor, "responseExecutor is null");
@@ -93,7 +94,7 @@ public class ExecutingStatementResource
     @Nested
     public TimeStat getRateLimiterBlockTime()
     {
-        return queryRateLimiter.getRateLimiterBlockTime();
+        return queryRateLimiter.get().getRateLimiterBlockTime();
     }
 
     @GET
@@ -122,8 +123,10 @@ public class ExecutingStatementResource
 
         ListenableFuture<Double> acquirePermitAsync;
         Query query = queryProvider.getQuery(queryId, slug);
-        if (featureToggle.isFeatureEnabled(QueryBlockingRateLimiter.class)) {
-            log.info("QueryBlockingRateLimiter is ENABLED");
+        QueryRateLimiter queryRateLimiter = this.queryRateLimiter.get();
+        if (featureToggle.isFeatureEnabled(QueryRateLimiter.class)) {
+            log.info("QueryRateLimiter is ENABLED");
+            log.info("QueryRateLimiter class " + this.queryRateLimiter.get().getClass().getName());
             acquirePermitAsync = queryRateLimiter.acquire(queryId);
         }
         else {

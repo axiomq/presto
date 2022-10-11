@@ -16,20 +16,16 @@ package com.facebook.presto.features.config;
 import com.facebook.airlift.configuration.AbstractConfigurationAwareModule;
 import com.facebook.airlift.log.Logger;
 import com.google.inject.Binder;
-import com.google.inject.Inject;
-import com.google.inject.Provides;
 import com.google.inject.multibindings.MapBinder;
 
 import java.util.Map;
 
 import static com.facebook.presto.features.config.Util.classForName;
-import static com.google.common.base.Suppliers.memoizeWithExpiration;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
-public class FileBasedFeatureToggleModule
+public class FeatureToggleModule
         extends AbstractConfigurationAwareModule
 {
-    private static final Logger log = Logger.get(FileBasedFeatureToggleModule.class);
+    private static final Logger log = Logger.get(FeatureToggleModule.class);
 
     @Override
     protected void setup(Binder binder)
@@ -43,22 +39,8 @@ public class FileBasedFeatureToggleModule
             {
                 featureMapBinder.addBinding(instanceClassName).to(classForName(instanceClassName));
             });
+//            Class featureClass = classForName(featureClassName);
+//            binder.bind(featureClass).toProvider(() -> binder.getProvider(FeatureToggle.class).get().getCurrentInstance(featureClassName));
         });
-    }
-
-    @Inject
-    @Provides
-    public FeatureToggle getFeatureToggle(FeatureToggleConfig config)
-    {
-        if (config.getRefreshPeriod() != null) {
-            return ForwardingFeatureToggle.of(memoizeWithExpiration(
-                    () -> {
-                        log.info("Refreshing feature toggle control from %s", config.getConfigSource());
-                        return new FileBasedFeatureToggle(config);
-                    },
-                    config.getRefreshPeriod().toMillis(),
-                    MILLISECONDS));
-        }
-        return new FileBasedFeatureToggle(config);
     }
 }

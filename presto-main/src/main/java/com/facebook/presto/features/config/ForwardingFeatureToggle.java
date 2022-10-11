@@ -47,4 +47,10 @@ public abstract class ForwardingFeatureToggle
     {
         return delegate().getFeatureConfigurations();
     }
+
+    @Override
+    public String getCurrentInstance(String featureClassName)
+    {
+        return delegate().getCurrentInstance(featureClassName);
+    }
 }
