@@ -128,7 +128,7 @@ public class QueuedStatementResource
     private final TracerProvider tracerProvider;
     private final SessionPropertyManager sessionPropertyManager;     // We may need some system default session property values at early query stage even before session is created.
 
-    private final QueryBlockingRateLimiter queryRateLimiter;
+    private final QueryRateLimiter queryRateLimiter;
     private final TimeStat queuedRateLimiterBlockTime = new TimeStat();
 
     @Inject
@@ -140,7 +140,7 @@ public class QueuedStatementResource
             ServerConfig serverConfig,
             TracerProvider tracerProvider,
             SessionPropertyManager sessionPropertyManager,
-            QueryBlockingRateLimiter queryRateLimiter)
+            QueryRateLimiter queryRateLimiter)
     {
         this.dispatchManager = requireNonNull(dispatchManager, "dispatchManager is null");
         this.queryResultsProvider = queryResultsProvider;

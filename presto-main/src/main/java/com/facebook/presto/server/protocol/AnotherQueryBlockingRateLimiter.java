@@ -47,7 +47,7 @@ import static java.util.Objects.requireNonNull;
  * When having sufficient tokens, Request will be responded immediately.
  * When not having enough tokens available, it uses the delayed processing method.
  */
-public class QueryBlockingRateLimiter
+public class AnotherQueryBlockingRateLimiter
         implements QueryRateLimiter
 {
     private final long rateLimiterBucketMaxSize;
@@ -57,7 +57,7 @@ public class QueryBlockingRateLimiter
     private final TimeStat rateLimiterBlockTime = new TimeStat();
 
     @Inject
-    public QueryBlockingRateLimiter(QueryManagerConfig queryManagerConfig)
+    public AnotherQueryBlockingRateLimiter(QueryManagerConfig queryManagerConfig)
     {
         requireNonNull(queryManagerConfig, "queryManagerConfig is null");
         this.rateLimiterBucketMaxSize = queryManagerConfig.getRateLimiterBucketMaxSize();

@@ -1,0 +1,3 @@
+
+### cancel query
+DELETE localhost:8080/v1/statement/executing/20221107_084547_00001_9mu7g/123456789?slug=xc295dc8d348044a3b4d57df193477688
