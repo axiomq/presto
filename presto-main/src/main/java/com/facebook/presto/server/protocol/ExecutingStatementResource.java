@@ -14,13 +14,17 @@
 package com.facebook.presto.server.protocol;
 
 import com.facebook.airlift.concurrent.BoundedExecutor;
+import com.facebook.airlift.log.Logger;
 import com.facebook.airlift.stats.TimeStat;
 import com.facebook.presto.client.QueryResults;
+import com.facebook.presto.features.config.FeatureToggle;
 import com.facebook.presto.server.ForStatementResource;
 import com.facebook.presto.server.ServerConfig;
 import com.facebook.presto.spi.QueryId;
 import com.google.common.collect.Ordering;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.inject.Provider;
+import com.google.inject.name.Named;
 import io.airlift.units.DataSize;
 import io.airlift.units.Duration;
 import org.weakref.jmx.Managed;
@@ -58,6 +62,8 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 @RolesAllowed(USER)
 public class ExecutingStatementResource
 {
+    private static final Logger log = Logger.get(ExecutingStatementResource.class);
+
     private static final Duration MAX_WAIT_TIME = new Duration(1, SECONDS);
     private static final Ordering<Comparable<Duration>> WAIT_ORDERING = Ordering.natural().nullsLast();
     private static final DataSize DEFAULT_TARGET_RESULT_SIZE = new DataSize(1, MEGABYTE);
@@ -66,26 +72,40 @@ public class ExecutingStatementResource
     private final BoundedExecutor responseExecutor;
     private final LocalQueryProvider queryProvider;
     private final boolean compressionEnabled;
-    private final QueryBlockingRateLimiter queryRateLimiter;
+    private final Provider<QueryRateLimiter> queryRateLimiter;
+    private final FeatureToggle featureToggle;
+    private final RetryCircuitBreakerInt retryCircuitBreaker;
+//    private final QueryRateLimiter rateLimiterAnother;
 
     @Inject
     public ExecutingStatementResource(
             @ForStatementResource BoundedExecutor responseExecutor,
             LocalQueryProvider queryProvider,
             ServerConfig serverConfig,
-            QueryBlockingRateLimiter queryRateLimiter)
+            Provider<QueryRateLimiter> queryRateLimiter,
+            FeatureToggle featureToggle
+    , @com.facebook.presto.features.tim.annotations.FeatureToggle("circuit-breaker") RetryCircuitBreakerInt retryCircuitBreaker
+    , @com.facebook.presto.features.tim.annotations.FeatureToggle("query-rate-limiter-default") QueryRateLimiter rateLimiterAnother
+//    , @Named("query-rate-limiter-default") QueryRateLimiter rateLimiterAnother
+    )
     {
         this.responseExecutor = requireNonNull(responseExecutor, "responseExecutor is null");
         this.queryProvider = requireNonNull(queryProvider, "queryProvider is null");
         this.compressionEnabled = requireNonNull(serverConfig, "serverConfig is null").isQueryResultsCompressionEnabled();
         this.queryRateLimiter = requireNonNull(queryRateLimiter, "queryRateLimiter is null");
+        this.featureToggle = featureToggle;
+        this.retryCircuitBreaker = retryCircuitBreaker;
+
+        System.out.println(rateLimiterAnother);
+        System.out.println();
+//        this.rateLimiterAnother = rateLimiterAnother;
     }
 
     @Managed
     @Nested
     public TimeStat getRateLimiterBlockTime()
     {
-        return queryRateLimiter.getRateLimiterBlockTime();
+        return queryRateLimiter.get().getRateLimiterBlockTime();
     }
 
     @GET
@@ -112,8 +132,21 @@ public class ExecutingStatementResource
             proto = uriInfo.getRequestUri().getScheme();
         }
 
+        ListenableFuture<Double> acquirePermitAsync;
         Query query = queryProvider.getQuery(queryId, slug);
-        ListenableFuture<Double> acquirePermitAsync = queryRateLimiter.acquire(queryId);
+        QueryRateLimiter queryRateLimiter = this.queryRateLimiter.get();
+
+        if (featureToggle.check("query-logger")) {
+            log.info("query-logger is ENABLED");
+            log.info("DELETE localhost:8080/v1/statement/executing/%s/123456789?slug=%s", queryId.getId(), slug);
+        }
+        else {
+            log.info("query-logger is DISABLED");
+        }
+
+        log.info("query rate limiter enabled %s ", featureToggle.check("query-rate-limiter"));
+        log.info("QueryRateLimiter class " + queryRateLimiter.getClass().getName());
+        acquirePermitAsync = queryRateLimiter.acquire(queryId);
         String effectiveFinalProto = proto;
         DataSize effectiveFinalTargetResultSize = targetResultSize;
         ListenableFuture<QueryResults> waitForResultsAsync = transformAsync(
@@ -138,7 +171,12 @@ public class ExecutingStatementResource
             @PathParam("token") long token,
             @QueryParam("slug") String slug)
     {
-        queryProvider.cancel(queryId, slug);
-        return Response.noContent().build();
+        if (featureToggle.check("query-cancel", queryId)) {
+            queryProvider.cancel(queryId, slug);
+            return Response.noContent().build();
+        }
+        else {
+            throw new RuntimeException("Cancel is not allowed!");
+        }
     }
 }

@@ -58,6 +58,9 @@ import com.facebook.presto.execution.scheduler.PhasedExecutionPolicy;
 import com.facebook.presto.execution.scheduler.SectionExecutionFactory;
 import com.facebook.presto.execution.scheduler.SplitSchedulerStats;
 import com.facebook.presto.failureDetector.FailureDetectorModule;
+import com.facebook.presto.features.config.FeatureToggleConfig;
+import com.facebook.presto.features.config.FileBasedFeatureToggleModule;
+import com.facebook.presto.features.config.RateLimiterModule;
 import com.facebook.presto.memory.ClusterMemoryManager;
 import com.facebook.presto.memory.ForMemoryManager;
 import com.facebook.presto.memory.LowMemoryKiller;
@@ -73,7 +76,6 @@ import com.facebook.presto.resourcemanager.ForResourceManager;
 import com.facebook.presto.resourcemanager.ResourceManagerProxy;
 import com.facebook.presto.server.protocol.ExecutingStatementResource;
 import com.facebook.presto.server.protocol.LocalQueryProvider;
-import com.facebook.presto.server.protocol.QueryBlockingRateLimiter;
 import com.facebook.presto.server.protocol.QueuedStatementResource;
 import com.facebook.presto.server.protocol.RetryCircuitBreaker;
 import com.facebook.presto.server.remotetask.HttpRemoteTaskFactory;
@@ -148,6 +150,12 @@ public class CoordinatorModule
         // presto coordinator announcement
         discoveryBinder(binder).bindHttpAnnouncement("presto-coordinator");
 
+        install(installModuleIf(
+                FeatureToggleConfig.class,
+                featureToggleConfig -> "file".equalsIgnoreCase(featureToggleConfig.getConfigSourceType()),
+                new FileBasedFeatureToggleModule()));
+        install(new RateLimiterModule());
+
         // statement resource
         jsonCodecBinder(binder).bindJsonCodec(QueryInfo.class);
         jsonCodecBinder(binder).bindJsonCodec(TaskInfo.class);
@@ -189,8 +197,9 @@ public class CoordinatorModule
         binder.bind(RetryCircuitBreaker.class).in(Scopes.SINGLETON);
         newExporter(binder).export(RetryCircuitBreaker.class).withGeneratedName();
 
-        binder.bind(QueryBlockingRateLimiter.class).in(Scopes.SINGLETON);
-        newExporter(binder).export(QueryBlockingRateLimiter.class).withGeneratedName();
+//        binder.bind(QueryBlockingRateLimiter.class).in(Scopes.SINGLETON);
+//        binder.bind(QueryRateLimiter.class).to(QueryBlockingRateLimiter.class).in(Scopes.SINGLETON);
+//        newExporter(binder).export(QueryBlockingRateLimiter.class).withGeneratedName();
 
         binder.bind(LocalQueryProvider.class).in(Scopes.SINGLETON);
 

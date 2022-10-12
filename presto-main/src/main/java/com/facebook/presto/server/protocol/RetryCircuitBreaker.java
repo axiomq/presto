@@ -24,6 +24,7 @@ import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class RetryCircuitBreaker
+        implements RetryCircuitBreakerInt
 {
     private final int retryLimit;
     private final DecayCounter counter;
@@ -38,16 +39,19 @@ public class RetryCircuitBreaker
         this.counter = new DecayCounter(1.0 / globalRetryWindow.roundTo(SECONDS));
     }
 
+    @Override
     public void incrementFailure()
     {
         counter.add(1);
     }
 
+    @Override
     public boolean isRetryAllowed()
     {
         return counter.getCount() < retryLimit;
     }
 
+    @Override
     @Managed
     public double getRetryCount()
     {
