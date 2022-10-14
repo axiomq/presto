@@ -11,19 +11,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.facebook.presto.features.config;
+package com.facebook.presto.features;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.facebook.presto.features.config.FeatureConfiguration;
 
-public class FeatureToggleStrategy
+import java.util.Collection;
+
+public interface FeatureToggle
 {
-    @JsonCreator
-    public FeatureToggleStrategy()
-    {
-    }
+    <T> boolean isFeatureEnabled(Class<T> clazz);
 
-    public boolean check()
-    {
-        return true;
-    }
+    Collection<FeatureConfiguration> getFeatureConfigurations();
+
+    String getCurrentInstance(String featureClassName);
 }

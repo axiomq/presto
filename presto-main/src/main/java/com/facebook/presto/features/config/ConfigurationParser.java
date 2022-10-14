@@ -15,6 +15,7 @@ package com.facebook.presto.features.config;
 
 import com.facebook.airlift.json.JsonObjectMapperProvider;
 import com.facebook.airlift.log.Logger;
+import com.facebook.presto.features.FileBasedFeatureToggle;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

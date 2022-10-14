@@ -11,7 +11,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.facebook.presto.features.config;
+package com.facebook.presto.features;
+
+import com.facebook.presto.features.FeatureToggle;
+import com.facebook.presto.features.config.FeatureConfiguration;
+import com.facebook.presto.features.config.FeatureToggleConfig;
 
 import java.util.Collection;
 import java.util.Map;

@@ -31,7 +31,7 @@ public class FeatureConfiguration
     private String featureClass;
     private List<String> featureInstances;
     private String currentInstance;
-    private FeatureToggleStrategy featureToggleStrategy;
+    private FeatureToggleStrategyConfig featureToggleStrategyConfig;
 
     @JsonCreator
     public FeatureConfiguration(
@@ -40,14 +40,14 @@ public class FeatureConfiguration
             @JsonProperty String featureClass,
             @JsonProperty List<String> featureInstances,
             @JsonProperty String currentInstance,
-            @JsonProperty FeatureToggleStrategy featureToggleStrategy)
+            @JsonProperty FeatureToggleStrategyConfig featureToggleStrategyConfig)
     {
         this.featureId = featureId;
         this.featureClass = featureClass;
         this.enabled = enabled;
         this.featureInstances = featureInstances;
         this.currentInstance = currentInstance;
-        this.featureToggleStrategy = featureToggleStrategy;
+        this.featureToggleStrategyConfig = featureToggleStrategyConfig;
     }
 
     public static FeatureConfiguration fromJson(String json)
@@ -111,14 +111,14 @@ public class FeatureConfiguration
     }
 
     @JsonProperty
-    public FeatureToggleStrategy getFeatureToggleStrategy()
+    public FeatureToggleStrategyConfig getFeatureToggleStrategyConfig()
     {
-        return featureToggleStrategy;
+        return featureToggleStrategyConfig;
     }
 
-    public void setFeatureToggleStrategy(FeatureToggleStrategy featureToggleStrategy)
+    public void setFeatureToggleStrategyConfig(FeatureToggleStrategyConfig featureToggleStrategyConfig)
     {
-        this.featureToggleStrategy = featureToggleStrategy;
+        this.featureToggleStrategyConfig = featureToggleStrategyConfig;
     }
 
     @Override

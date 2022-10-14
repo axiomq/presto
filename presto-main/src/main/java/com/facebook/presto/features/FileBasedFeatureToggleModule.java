@@ -11,10 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.facebook.presto.features.config;
+package com.facebook.presto.features;
 
 import com.facebook.airlift.configuration.AbstractConfigurationAwareModule;
 import com.facebook.airlift.log.Logger;
+import com.facebook.presto.features.config.ConfigurationParser;
+import com.facebook.presto.features.config.FeatureConfiguration;
+import com.facebook.presto.features.config.FeatureToggleConfig;
 import com.google.inject.Binder;
 import com.google.inject.Inject;
 import com.google.inject.Provides;

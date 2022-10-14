@@ -11,7 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.facebook.presto.features.config;
+package com.facebook.presto.features;
+
+import com.facebook.presto.features.config.FeatureConfiguration;
 
 import java.util.Collection;
 import java.util.function.Supplier;
@@ -21,15 +23,15 @@ import static java.util.Objects.requireNonNull;
 public abstract class ForwardingFeatureToggle
         implements FeatureToggle
 {
-    public static ForwardingFeatureToggle of(Supplier<FeatureToggle> featureToggleControl)
+    public static ForwardingFeatureToggle of(Supplier<FeatureToggle> featureToggle)
     {
-        requireNonNull(featureToggleControl, "featureToggleControl is null");
+        requireNonNull(featureToggle, "featureToggle is null");
         return new ForwardingFeatureToggle()
         {
             @Override
             protected FeatureToggle delegate()
             {
-                return featureToggleControl.get();
+                return featureToggle.get();
             }
         };
     }
