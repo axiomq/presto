@@ -1,4 +1,4 @@
-package com.facebook.presto.plugin.memory;
+package com.facebook.presto.memory.context.ft;
 
 public interface MemoryFeatureToggleInterface
 {

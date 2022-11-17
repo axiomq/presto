@@ -18,6 +18,7 @@ import com.facebook.airlift.log.Logger;
 import com.facebook.airlift.stats.TimeStat;
 import com.facebook.presto.client.QueryResults;
 import com.facebook.presto.features.annotations.FeatureToggle;
+import com.facebook.presto.memory.context.ft.MemoryFeatureToggleInterface;
 import com.facebook.presto.server.ForStatementResource;
 import com.facebook.presto.server.ServerConfig;
 import com.facebook.presto.spi.QueryId;
@@ -80,6 +81,7 @@ public class ExecutingStatementResource
     private final Supplier<Boolean> isQueryLoggerEnabled;
     private final Function<Object, Boolean> isQueryCancelEnabled;
     private final Supplier<Boolean> isMemoryFeatureEnabled;
+    private final Provider<MemoryFeatureToggleInterface> memoryFeatureToggleInterface;
 
     @Inject
     public ExecutingStatementResource(
@@ -89,7 +91,8 @@ public class ExecutingStatementResource
             @FeatureToggle("query-rate-limiter") Provider<QueryRateLimiter> queryRateLimiter,
             @FeatureToggle("query-logger") Supplier<Boolean> isQueryLoggerEnabled,
             @FeatureToggle("query-cancel") Function<Object, Boolean> isQueryCancelEnabled,
-            @FeatureToggle("memory-feature") Supplier<Boolean> isMemoryFeatureEnabled)
+            @FeatureToggle("memory-feature") Supplier<Boolean> isMemoryFeatureEnabled,
+            @FeatureToggle("memory-feature") Provider<MemoryFeatureToggleInterface> memoryFeatureToggleInterface)
     {
         this.responseExecutor = requireNonNull(responseExecutor, "responseExecutor is null");
         this.queryProvider = requireNonNull(queryProvider, "queryProvider is null");
@@ -98,6 +101,7 @@ public class ExecutingStatementResource
         this.isQueryLoggerEnabled = isQueryLoggerEnabled;
         this.isQueryCancelEnabled = isQueryCancelEnabled;
         this.isMemoryFeatureEnabled = isMemoryFeatureEnabled;
+        this.memoryFeatureToggleInterface = memoryFeatureToggleInterface;
     }
 
     @Managed
@@ -147,6 +151,7 @@ public class ExecutingStatementResource
 
         if (isMemoryFeatureEnabled.get()) {
             log.info("\"memory-feature\" is ENABLED");
+            log.info("MemoryFeatureToggleInterface class " + memoryFeatureToggleInterface.get().getClass().getName());
         }
         else {
             log.info("\"memory-feature\" is DISABLED");

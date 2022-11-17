@@ -69,6 +69,7 @@ import com.facebook.presto.memory.MemoryManagerConfig.LowMemoryKillerPolicy;
 import com.facebook.presto.memory.NoneLowMemoryKiller;
 import com.facebook.presto.memory.TotalReservationLowMemoryKiller;
 import com.facebook.presto.memory.TotalReservationOnBlockedNodesLowMemoryKiller;
+import com.facebook.presto.memory.context.ft.MemoryContextModule;
 import com.facebook.presto.metadata.CatalogManager;
 import com.facebook.presto.operator.ForScheduler;
 import com.facebook.presto.operator.OperatorInfo;
@@ -193,6 +194,9 @@ public class CoordinatorModule
 
         featureToggleBinder(binder)
                 .registerToggleStrategy(ALLOW_LIST, AllowListToggleStrategy.class);
+
+        binder.install(new MemoryContextModule());
+
 
         // statement resource
         jsonCodecBinder(binder).bindJsonCodec(QueryInfo.class);
