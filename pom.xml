@@ -189,6 +189,9 @@
         <module>presto-hudi</module>
         <module>presto-native-execution</module>
         <module>presto-router</module>
+
+        <module>presto-feature-toggle</module>
+
     </modules>
 
     <dependencyManagement>

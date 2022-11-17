@@ -16,7 +16,6 @@ package com.facebook.presto.features.config;
 import com.facebook.airlift.log.Logger;
 import com.facebook.presto.features.binder.PrestoFeatureToggle;
 import com.facebook.presto.features.strategy.AllowAllStrategy;
-import com.facebook.presto.features.strategy.AllowListToggleStrategy;
 import com.facebook.presto.features.strategy.FeatureToggleStrategy;
 import com.facebook.presto.features.strategy.FeatureToggleStrategyFactory;
 import com.facebook.presto.features.strategy.OsToggleStrategy;
@@ -46,7 +45,7 @@ public class FileBasedFeatureToggleModule
     {
         MapBinder<String, FeatureToggleStrategy> featureToggleStrategyMap = MapBinder.newMapBinder(binder, String.class, FeatureToggleStrategy.class);
         featureToggleStrategyMap.addBinding(ALLOW_ALL).to(AllowAllStrategy.class);
-        featureToggleStrategyMap.addBinding(ALLOW_LIST).to(AllowListToggleStrategy.class);
+//        featureToggleStrategyMap.addBinding(ALLOW_LIST).to(AllowListToggleStrategy.class);
         featureToggleStrategyMap.addBinding(OS_TOGGLE).to(OsToggleStrategy.class);
 
         binder.bind(PrestoFeatureToggle.class).in(Singleton.class);
@@ -65,7 +64,7 @@ public class FileBasedFeatureToggleModule
     {
         if (config.getRefreshPeriod() != null) {
             return ForwardingFeaturesConfiguration.of(memoizeWithExpiration(
-                    () -> new FileBasedFeatureToggleConfiguration(parseConfiguration(config)),
+                    () -> new com.facebook.presto.features.config.FileBasedFeatureToggleConfiguration(parseConfiguration(config)),
                     config.getRefreshPeriod().toMillis(),
                     MILLISECONDS));
         }

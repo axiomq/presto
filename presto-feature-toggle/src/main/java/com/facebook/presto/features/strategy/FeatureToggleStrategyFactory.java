@@ -21,7 +21,7 @@ public class FeatureToggleStrategyFactory
     public static final String ALLOW_LIST = "AllowList";
     public static final String OS_TOGGLE = "OsToggle";
 
-    private final Map<String, FeatureToggleStrategy> featureToggleStrategyMap;
+    private final Map<String, com.facebook.presto.features.strategy.FeatureToggleStrategy> featureToggleStrategyMap;
 
     public FeatureToggleStrategyFactory(Map<String, FeatureToggleStrategy> featureToggleStrategyMap)
     {

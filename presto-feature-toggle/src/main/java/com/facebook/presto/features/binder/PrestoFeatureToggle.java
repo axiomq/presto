@@ -26,14 +26,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PrestoFeatureToggle
 {
-    private final Map<String, Feature<?>> featureMap;
+    private final Map<String, com.facebook.presto.features.binder.Feature<?>> featureMap;
     private final Map<String, Object> featureInstanceMap;
     private final FeatureToggleStrategyFactory featureToggleStrategyFactory;
     private final FeatureToggleConfiguration featureToggleConfiguration;
 
     @Inject
     public PrestoFeatureToggle(
-            @FeatureToggle("feature-map") Map<String, Feature<?>> featureMap,
+            @FeatureToggle("feature-map") Map<String, com.facebook.presto.features.binder.Feature<?>> featureMap,
             @FeatureToggle("feature-instance-map") Map<String, Object> featureInstanceMap,
             FeatureToggleStrategyFactory featureToggleStrategyFactory,
             FeatureToggleConfiguration featureToggleConfiguration)
@@ -47,7 +47,7 @@ public class PrestoFeatureToggle
 
     public boolean isEnabled(String featureId)
     {
-        Feature<?> feature = featureMap.get(featureId);
+        com.facebook.presto.features.binder.Feature<?> feature = featureMap.get(featureId);
         if (feature.getConfiguration().getHotReloadable()) {
             return true;
         }
@@ -73,7 +73,7 @@ public class PrestoFeatureToggle
 
     public boolean isEnabled(String featureId, Object object)
     {
-        Feature<?> feature = featureMap.get(featureId);
+        com.facebook.presto.features.binder.Feature<?> feature = featureMap.get(featureId);
         if (feature.getConfiguration().getHotReloadable()) {
             return true;
         }

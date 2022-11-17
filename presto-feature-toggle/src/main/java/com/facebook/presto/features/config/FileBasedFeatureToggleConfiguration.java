@@ -15,8 +15,6 @@ package com.facebook.presto.features.config;
 
 import java.util.Map;
 
-import static com.facebook.presto.features.config.ConfigurationParser.parseConfiguration;
-
 public class FileBasedFeatureToggleConfiguration
         implements FeatureToggleConfiguration
 {

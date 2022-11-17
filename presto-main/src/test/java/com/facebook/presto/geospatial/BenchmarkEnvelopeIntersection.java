@@ -40,6 +40,10 @@ import static com.facebook.presto.geospatial.serde.EsriGeometrySerde.deserialize
 import static io.airlift.slice.Slices.utf8Slice;
 import static org.testng.Assert.assertEquals;
 
+
+
+import static com.facebook.presto.testing.assertions.Assert.assertEquals;
+
 @State(Scope.Thread)
 @Fork(2)
 @Warmup(iterations = 10, time = 500, timeUnit = TimeUnit.MILLISECONDS)

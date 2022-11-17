@@ -13,7 +13,6 @@
  */
 package com.facebook.presto.features.strategy;
 
-import com.facebook.airlift.log.Logger;
 import com.facebook.presto.features.config.FeatureConfiguration;
 
 import java.util.Optional;
@@ -30,7 +29,7 @@ public class OsToggleStrategy
     @Override
     public boolean check(FeatureConfiguration configuration, String featureId)
     {
-        Optional<FeatureToggleStrategyConfig> featureToggleStrategyConfigOptional = configuration.getFeatureToggleStrategyConfig();
+        Optional<com.facebook.presto.features.strategy.FeatureToggleStrategyConfig> featureToggleStrategyConfigOptional = configuration.getFeatureToggleStrategyConfig();
         if (!featureToggleStrategyConfigOptional.isPresent()) {
             return true;
         }

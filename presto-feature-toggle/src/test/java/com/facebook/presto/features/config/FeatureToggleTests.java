@@ -20,9 +20,9 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static com.facebook.presto.features.binder.FeatureToggleBinder.featureToggleBinder;
-import static com.facebook.presto.testing.assertions.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
+import static org.testng.AssertJUnit.assertEquals;
 
 public class FeatureToggleTests
 {

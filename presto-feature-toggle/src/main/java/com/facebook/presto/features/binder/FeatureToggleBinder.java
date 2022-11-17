@@ -15,6 +15,7 @@ package com.facebook.presto.features.binder;
 
 import com.facebook.presto.features.annotations.FeatureToggles;
 import com.facebook.presto.features.config.FeatureConfiguration;
+import com.facebook.presto.features.strategy.FeatureToggleStrategy;
 import com.facebook.presto.features.strategy.FeatureToggleStrategyConfig;
 import com.google.inject.Binder;
 import com.google.inject.TypeLiteral;
@@ -156,5 +157,12 @@ public class FeatureToggleBinder<T>
                 binder.bind(baseClass).to(defaultClass);
             }
         }
+    }
+
+    public FeatureToggleBinder<T> registerToggleStrategy(String strategyName, Class<? extends FeatureToggleStrategy> featureToggleStrategyClass)
+    {
+        MapBinder<String, FeatureToggleStrategy> featureToggleStrategyMap = MapBinder.newMapBinder(binder, String.class, FeatureToggleStrategy.class);
+        featureToggleStrategyMap.addBinding(strategyName).to(featureToggleStrategyClass);
+        return this;
     }
 }
