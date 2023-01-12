@@ -57,6 +57,9 @@ import com.facebook.presto.execution.scheduler.PhasedExecutionPolicy;
 import com.facebook.presto.execution.scheduler.SectionExecutionFactory;
 import com.facebook.presto.execution.scheduler.SplitSchedulerStats;
 import com.facebook.presto.failureDetector.FailureDetectorModule;
+import com.facebook.presto.features.config.FeatureToggleConfig;
+import com.facebook.presto.features.config.FileBasedFeatureToggleModule;
+import com.facebook.presto.features.strategy.AllowListToggleStrategy;
 import com.facebook.presto.memory.ClusterMemoryManager;
 import com.facebook.presto.memory.ForMemoryManager;
 import com.facebook.presto.memory.LowMemoryKiller;
@@ -65,16 +68,20 @@ import com.facebook.presto.memory.MemoryManagerConfig.LowMemoryKillerPolicy;
 import com.facebook.presto.memory.NoneLowMemoryKiller;
 import com.facebook.presto.memory.TotalReservationLowMemoryKiller;
 import com.facebook.presto.memory.TotalReservationOnBlockedNodesLowMemoryKiller;
+import com.facebook.presto.memory.context.ft.MemoryContextModule;
 import com.facebook.presto.metadata.CatalogManager;
 import com.facebook.presto.operator.ForScheduler;
 import com.facebook.presto.operator.OperatorInfo;
 import com.facebook.presto.resourcemanager.ForResourceManager;
 import com.facebook.presto.resourcemanager.ResourceManagerProxy;
+import com.facebook.presto.server.protocol.AnotherQueryBlockingRateLimiter;
 import com.facebook.presto.server.protocol.ExecutingStatementResource;
 import com.facebook.presto.server.protocol.LocalQueryProvider;
 import com.facebook.presto.server.protocol.QueryBlockingRateLimiter;
+import com.facebook.presto.server.protocol.QueryRateLimiter;
 import com.facebook.presto.server.protocol.QueuedStatementResource;
 import com.facebook.presto.server.protocol.RetryCircuitBreaker;
+import com.facebook.presto.server.protocol.RetryCircuitBreakerInt;
 import com.facebook.presto.server.remotetask.HttpRemoteTaskFactory;
 import com.facebook.presto.server.remotetask.RemoteTaskStats;
 import com.facebook.presto.spi.memory.ClusterMemoryPoolManager;
@@ -88,6 +95,7 @@ import com.facebook.presto.transaction.TransactionManager;
 import com.facebook.presto.transaction.TransactionManagerConfig;
 import com.facebook.presto.util.PrestoDataDefBindingHelper;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Binder;
 import com.google.inject.Provides;
 import com.google.inject.Scopes;
@@ -116,6 +124,8 @@ import static com.facebook.presto.execution.AccessControlCheckerExecution.Access
 import static com.facebook.presto.execution.DDLDefinitionExecution.DDLDefinitionExecutionFactory;
 import static com.facebook.presto.execution.SessionDefinitionExecution.SessionDefinitionExecutionFactory;
 import static com.facebook.presto.execution.SqlQueryExecution.SqlQueryExecutionFactory;
+import static com.facebook.presto.features.binder.FeatureToggleBinder.featureToggleBinder;
+import static com.facebook.presto.sql.analyzer.utils.StatementUtils.getAllQueryTypes;
 import static com.google.inject.multibindings.MapBinder.newMapBinder;
 import static com.google.inject.multibindings.OptionalBinder.newOptionalBinder;
 import static java.util.concurrent.Executors.newCachedThreadPool;
@@ -139,6 +149,44 @@ public class CoordinatorModule
 
         // presto coordinator announcement
         discoveryBinder(binder).bindHttpAnnouncement("presto-coordinator");
+
+        install(installModuleIf(
+                FeatureToggleConfig.class,
+                featureToggleConfig -> "file".equalsIgnoreCase(featureToggleConfig.getConfigSourceType()),
+                new FileBasedFeatureToggleModule()));
+
+        featureToggleBinder(binder, QueryRateLimiter.class)
+                .featureId("query-rate-limiter")
+                .baseClass(QueryRateLimiter.class)
+                .defaultClass(QueryBlockingRateLimiter.class)
+                .allOf(QueryBlockingRateLimiter.class, AnotherQueryBlockingRateLimiter.class)
+                .enabled(true)
+                .toggleStrategy("AllowAll")
+                .toggleStrategyConfig(ImmutableMap.of("key", "value", "key2", "value2"))
+                .bind();
+
+        featureToggleBinder(binder)
+                .featureId("query-logger")
+                .enabled(true)
+                .bind();
+
+        featureToggleBinder(binder, RetryCircuitBreakerInt.class)
+                .featureId("circuit-breaker")
+                .defaultClass(RetryCircuitBreaker.class)
+                .enabled(true)
+                .bind();
+
+        featureToggleBinder(binder)
+                .featureId("query-cancel")
+                .enabled(true)
+                .toggleStrategy("AllowList")
+                .toggleStrategyConfig(ImmutableMap.of("allow-list-source", ".*IDEA.*", "allow-list-user", ".*prestodb"))
+                .bind();
+
+        featureToggleBinder(binder)
+                .registerToggleStrategy("AllowList", AllowListToggleStrategy.class);
+
+        binder.install(new MemoryContextModule());
 
         // statement resource
         jsonCodecBinder(binder).bindJsonCodec(QueryInfo.class);
