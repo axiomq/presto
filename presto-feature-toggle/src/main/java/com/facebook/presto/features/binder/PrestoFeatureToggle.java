@@ -137,4 +137,14 @@ public class PrestoFeatureToggle
             return null;
         }
     }
+
+    public Map<String, Feature<?>> getFeatureMap()
+    {
+        return featureMap;
+    }
+
+    public FeatureToggleConfiguration getFeatureToggleConfiguration()
+    {
+        return featureToggleConfiguration;
+    }
 }

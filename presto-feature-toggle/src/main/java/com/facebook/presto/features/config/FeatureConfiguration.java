@@ -15,8 +15,6 @@ package com.facebook.presto.features.config;
 
 import com.facebook.airlift.json.JsonCodec;
 import com.facebook.presto.features.strategy.FeatureToggleStrategyConfig;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,16 +37,15 @@ public class FeatureConfiguration
     private String defaultInstance;
     private FeatureToggleStrategyConfig featureToggleStrategyConfig;
 
-    @JsonCreator
     public FeatureConfiguration(
-            @JsonProperty String featureId,
-            @JsonProperty boolean enabled,
-            @JsonProperty boolean hotReloadable,
-            @JsonProperty String featureClass,
-            @JsonProperty List<String> featureInstances,
-            @JsonProperty String currentInstance,
-            @JsonProperty String defaultInstance,
-            @JsonProperty FeatureToggleStrategyConfig featureToggleStrategyConfig)
+            String featureId,
+            boolean enabled,
+            boolean hotReloadable,
+            String featureClass,
+            List<String> featureInstances,
+            String currentInstance,
+            String defaultInstance,
+            FeatureToggleStrategyConfig featureToggleStrategyConfig)
     {
         this.featureId = featureId;
         this.featureClass = featureClass;
@@ -70,7 +67,6 @@ public class FeatureConfiguration
         return new FeatureConfigurationBuilder();
     }
 
-    @JsonProperty
     public String getFeatureId()
     {
         return featureId;
@@ -81,7 +77,6 @@ public class FeatureConfiguration
         this.featureId = featureId;
     }
 
-    @JsonProperty
     public boolean isEnabled()
     {
         return enabled;
@@ -92,7 +87,6 @@ public class FeatureConfiguration
         this.enabled = enabled;
     }
 
-    @JsonProperty
     public String getFeatureClass()
     {
         return featureClass;
@@ -103,7 +97,6 @@ public class FeatureConfiguration
         this.featureClass = featureClass;
     }
 
-    @JsonProperty
     public List<String> getFeatureInstances()
     {
         return featureInstances;
@@ -114,7 +107,6 @@ public class FeatureConfiguration
         this.featureInstances = featureInstances;
     }
 
-    @JsonProperty
     public String getCurrentInstance()
     {
         return currentInstance;
@@ -125,7 +117,6 @@ public class FeatureConfiguration
         this.currentInstance = currentInstance;
     }
 
-    @JsonProperty
     public String getDefaultInstance()
     {
         return defaultInstance;
@@ -136,7 +127,6 @@ public class FeatureConfiguration
         this.defaultInstance = defaultInstance;
     }
 
-    @JsonProperty
     public Optional<FeatureToggleStrategyConfig> getFeatureToggleStrategyConfig()
     {
         return Optional.ofNullable(featureToggleStrategyConfig);

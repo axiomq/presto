@@ -1,0 +1,29 @@
+### cancel query
+DELETE localhost:8080/v1/statement/executing/20221117_122518_00001_2fvf4/123456789?slug=xc40f4b0e3d644493891de1bd284355a1
+
+### features
+GET localhost:8080/v1/features
+
+### features enabled=true
+GET localhost:8080/v1/features?enabled=true
+
+### features enabled=false
+GET localhost:8080/v1/features?enabled=false
+
+### features id=query
+GET localhost:8080/v1/features?id=query
+
+### features id=query&enabled=true
+GET localhost:8080/v1/features?id=query&enabled=true
+
+### features id=query&enabled=false
+GET localhost:8080/v1/features?id=query&enabled=false
+
+### features enabled ?
+GET localhost:8080/v1/features/query-cancel
+
+### features /query-cancel
+GET localhost:8080/v1/features/query-cancel
+
+### features /query-rate-limiter
+GET localhost:8080/v1/features/query-rate-limiter

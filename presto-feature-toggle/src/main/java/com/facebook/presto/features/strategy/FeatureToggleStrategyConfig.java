@@ -13,11 +13,11 @@
  */
 package com.facebook.presto.features.strategy;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class FeatureToggleStrategyConfig
 {
@@ -26,10 +26,9 @@ public class FeatureToggleStrategyConfig
     private final Map<String, String> configurationMap;
     private final String strategyClass;
 
-    @JsonCreator
     public FeatureToggleStrategyConfig(
-            @JsonProperty String strategyClass,
-            @JsonProperty Map<String, String> configurationMap)
+            String strategyClass,
+            Map<String, String> configurationMap)
     {
         this.strategyClass = strategyClass;
         this.configurationMap = configurationMap;
@@ -46,6 +45,14 @@ public class FeatureToggleStrategyConfig
     public String getToggleStrategyClass()
     {
         return strategyClass;
+    }
+
+    public Map<String, String> getConfigurationMap()
+    {
+        List<String> properties = Arrays.asList(ACTIVE, "");
+        return configurationMap.entrySet().stream()
+                .filter(e -> !properties.contains(e.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     public Optional<String> get(String key)

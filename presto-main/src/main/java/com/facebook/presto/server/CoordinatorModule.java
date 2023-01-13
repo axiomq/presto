@@ -187,6 +187,7 @@ public class CoordinatorModule
                 .registerToggleStrategy("AllowList", AllowListToggleStrategy.class);
 
         binder.install(new MemoryContextModule());
+//        jaxrsBinder(binder).bind(FeatureToggleInfo.class);
 
         // statement resource
         jsonCodecBinder(binder).bindJsonCodec(QueryInfo.class);
