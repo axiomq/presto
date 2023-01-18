@@ -89,6 +89,7 @@ public class ExecutingStatementResource
             LocalQueryProvider queryProvider,
             ServerConfig serverConfig,
             @FeatureToggle("query-rate-limiter") Provider<QueryRateLimiter> queryRateLimiter,
+            QueryRateLimiter xqueryRateLimiter,
             @FeatureToggle("query-logger") Supplier<Boolean> isQueryLoggerEnabled,
             @FeatureToggle("query-cancel") Function<Object, Boolean> isQueryCancelEnabled,
             @FeatureToggle("memory-feature") Supplier<Boolean> isMemoryFeatureEnabled,

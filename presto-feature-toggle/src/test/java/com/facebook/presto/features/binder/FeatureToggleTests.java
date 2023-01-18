@@ -41,6 +41,9 @@ import static org.testng.Assert.assertTrue;
 
 public class FeatureToggleTests
 {
+    /**
+     * map is configuration provider for dynamic configuration parameters
+     */
     private final Map<String, FeatureConfiguration> map = new HashMap<>();
 
     /**
@@ -75,7 +78,9 @@ public class FeatureToggleTests
      * <pre>
      *     feature.HotReloadFeature.currentInstance=com.facebook.presto.features.classes.HotReloadFeatureImpl02
      * </pre>
-     * after configuration refresh period new implementation is provided in HotReloadRunner instance
+     * after configuration refresh period new implementation is provided in HotReloadRunner instance.
+     * For hot reloadable feature toggles only allowed configuration change is changing current instance.
+     * This type of feature toggle is enabled by default, and cannot be disabled on runtime.
      */
     @Test
     public void testHotReload()
@@ -110,6 +115,33 @@ public class FeatureToggleTests
         assertEquals("HotReloadFeatureImpl02", className);
     }
 
+    /**
+     * test provider injection for base class. Binding is similar to "HotReloadFeature", but alternative implementations are not provided
+     * <p>
+     * definition of provider injection of feature toggle with id "ProviderFeature"
+     * <pre>{@code
+     *  binder -> featureToggleBinder(binder, ProviderFeature.class)
+     *                    .featureId("ProviderFeature")
+     *                    // base interface
+     *                    .baseClass(ProviderFeature.class)
+     *                    // implementation will be injected as provider
+     *                    .defaultClass(ProviderFeatureImpl.class)
+     *                    .bind()
+     * }</pre>
+     * <p>
+     * Feature Toggles injects default implementation of the ProviderFeature interface to provider annotated with @FeatureToggle("ProviderFeature")
+     * <pre>{@code
+     *         @Inject
+     *         public ProviderInjectionRunner(
+     *                 @FeatureToggle("ProviderFeature") Provider<ProviderFeature> providerFeature)
+     *         {
+     *             this.providerFeature = providerFeature;
+     *         }
+     * }</pre>
+     * <p>
+     * in test default implementation is provided in ProviderFeature instance.
+     * implementation cannot be changed on runtime.
+     */
     @Test
     public void testProviderInjection()
     {
@@ -130,6 +162,42 @@ public class FeatureToggleTests
         assertEquals("ProviderFeatureImpl", className);
     }
 
+    /**
+     * test injection of boolean supplier. Supplier can be used to test if the feature is enabled or disabled
+     * <p>
+     * definition of supplier injection of feature toggle with id "SimpleFeature"
+     * <pre>{@code
+     *        binder -> featureToggleBinder(binder)
+     *                         .featureId("SimpleFeature")
+     *                         .bind()
+     * }</pre>
+     * <p>
+     * Feature Toggles injects boolean supplier to param annotated with @FeatureToggle("SimpleFeature")
+     * <pre>{@code
+     *          @Inject
+     *         public SupplierInjectionRunner(@FeatureToggle("SimpleFeature") Supplier<Boolean> isSimpleFeatureEnabled)
+     *         {
+     *             this.isSimpleFeatureEnabled = isSimpleFeatureEnabled;
+     *         }
+     * }</pre>
+     * <p>
+     * in first test feature with id "SimpleFeature" is enabled by default
+     * <pre>{@code
+     *      isSimpleFeatureEnabled.get() will return true
+     * </pre>
+     * then we change run time configuration for feature, changing parameter enabled to "false"
+     * <pre>{@code
+     *     map.put("SimpleFeature", FeatureConfiguration.builder().enabled(false).build());
+     * }</pre>
+     * it is same as changing configuration param feature.{SimpleFeature}.enabled
+     * <pre>
+     *     feature.SimpleFeature.enable=false
+     * </pre>
+     * after configuration refresh period supplier will return false
+     * <pre>{@code
+     *      isSimpleFeatureEnabled.get() will return false
+     * </pre>
+     */
     @Test
     public void testSupplierInjection()
     {
@@ -155,6 +223,44 @@ public class FeatureToggleTests
         assertFalse(enabled);
     }
 
+    /**
+     * test injection function that accepts object as parameter
+     * <p>
+     * This function is used to evaluate given parameter in Feature Toggle Strategy.
+     * <p>
+     * definition of the feature toggle with id "FunctionInjectionFeature"
+     * <pre>{@code
+     *        binder -> featureToggleBinder(binder)
+     *                         .featureId("FunctionInjectionFeature")
+     *                         .bind()
+     * }</pre>
+     * <p>
+     * Feature Toggles injects function to parameter annotated with @FeatureToggle("FunctionInjectionFeature")
+     * <pre>{@code
+     *         @Inject
+     *         public FunctionInjectionRunner(@FeatureToggle("FunctionInjectionFeature") Function<Object, Boolean> isFunctionInjectionFeatureEnabled)
+     *         {
+     *             this.isFunctionInjectionFeatureEnabled = isFunctionInjectionFeatureEnabled;
+     *         }
+     * }</pre>
+     * <p>
+     * in first test feature with id "FunctionInjectionFeature" is enabled by default
+     * <pre>{@code
+     *      isFunctionInjectionFeatureEnabled.apply("string") will return true
+     * </pre>
+     * then we change run time configuration for feature, changing parameter enabled to "false"
+     * <pre>{@code
+     *     map.put("FunctionInjectionFeature", FeatureConfiguration.builder().enabled(false).build());
+     * }</pre>
+     * it is same as changing configuration param feature.{FunctionInjectionFeature}.enabled
+     * <pre>
+     *     feature.FunctionInjectionFeature.enable=false
+     * </pre>
+     * after configuration refresh period supplier will return false
+     * <pre>{@code
+     *      isSimpleFeatureEnabled.get() will return false
+     * </pre>
+     */
     @Test
     public void testFunctionInjection()
     {
@@ -180,6 +286,48 @@ public class FeatureToggleTests
         assertFalse(enabled);
     }
 
+    /**
+     * test injection function that accepts object as parameter. Function is used to evaluate
+     * <p>
+     * This function is used to evaluate given parameter in Feature Toggle Strategy.
+     * <p>
+     * definition of the feature toggle with id "FunctionInjectionFeature"
+     * <pre>{@code
+     *      binder -> featureToggleBinder(binder)
+     *                         .featureId("FunctionInjectionWithStrategy")
+     *                         // AllowAll is a dummy strategy that will never evaluate to false
+     *                         .toggleStrategy("AllowAll")
+     *                         // dummy params
+     *                         .toggleStrategyConfig(ImmutableMap.of("key", "value", "key2", "value2"))
+     *                         .bind()
+     * }</pre>
+     * <p>
+     * Feature Toggles injects function to parameter annotated with @FeatureToggle("FunctionInjectionWithStrategy")
+     * <pre>{@code
+     *         @Inject
+     *         public FunctionInjectionRunner(@FeatureToggle("FunctionInjectionFeature") Function<Object, Boolean> isFunctionInjectionFeatureEnabled)
+     *         {
+     *            this.isFunctionInjectionFeatureEnabled = isFunctionInjectionFeatureEnabled;
+     *         }
+     * }</pre>
+     * <p>
+     * in first test feature with id "FunctionInjectionWithStrategy" is enabled by default
+     * <pre>{@code
+     *      isFunctionInjectionWithStrategyEnabled.apply("string") will return true
+     * </pre>
+     * then we change run time configuration for feature, changing parameter enabled to "false"
+     * <pre>{@code
+     *     map.put("FunctionInjectionWithStrategy", FeatureConfiguration.builder().enabled(false).build());
+     * }</pre>
+     * it is same as changing configuration param feature.{FunctionInjectionWithStrategy}.enabled
+     * <pre>
+     *     feature.FunctionInjectionWithStrategy.enable=false
+     * </pre>
+     * after configuration refresh period supplier will return false
+     * <pre>{@code
+     *      isSimpleFeatureEnabled.get() will return false
+     * </pre>
+     */
     @Test
     public void testFunctionInjectionWithStrategy()
     {
@@ -221,6 +369,23 @@ public class FeatureToggleTests
         public String testHotReloadFeature()
         {
             return hotReloadFeature.get().test();
+        }
+    }
+
+    private static class SimpleBindingReloadRunner
+    {
+        private final HotReloadFeature hotReloadFeature;
+
+        @Inject
+        public SimpleBindingReloadRunner(HotReloadFeature hotReloadFeature)
+        {
+            this.hotReloadFeature = hotReloadFeature;
+        }
+
+        public String testHotReloadFeature()
+        {
+//            return hotReloadFeature.get().test();
+            return "";
         }
     }
 

@@ -57,8 +57,10 @@ import com.facebook.presto.execution.scheduler.PhasedExecutionPolicy;
 import com.facebook.presto.execution.scheduler.SectionExecutionFactory;
 import com.facebook.presto.execution.scheduler.SplitSchedulerStats;
 import com.facebook.presto.failureDetector.FailureDetectorModule;
+import com.facebook.presto.features.binder.PrestoFeatureToggle;
 import com.facebook.presto.features.config.FeatureToggleConfig;
 import com.facebook.presto.features.config.FileBasedFeatureToggleModule;
+import com.facebook.presto.features.http.FeatureToggleInfo;
 import com.facebook.presto.features.strategy.AllowListToggleStrategy;
 import com.facebook.presto.memory.ClusterMemoryManager;
 import com.facebook.presto.memory.ForMemoryManager;
@@ -160,9 +162,6 @@ public class CoordinatorModule
                 .baseClass(QueryRateLimiter.class)
                 .defaultClass(QueryBlockingRateLimiter.class)
                 .allOf(QueryBlockingRateLimiter.class, AnotherQueryBlockingRateLimiter.class)
-                .enabled(true)
-                .toggleStrategy("AllowAll")
-                .toggleStrategyConfig(ImmutableMap.of("key", "value", "key2", "value2"))
                 .bind();
 
         featureToggleBinder(binder)
@@ -342,6 +341,10 @@ public class CoordinatorModule
 
         // cleanup
         binder.bind(ExecutorCleanup.class).in(Scopes.SINGLETON);
+
+        binder.bind(PrestoFeatureToggle.class).in(Singleton.class);
+
+        jaxrsBinder(binder).bind(FeatureToggleInfo.class);
     }
 
     @Provides

@@ -32,6 +32,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 
 public class FeatureToggleBinder<T>
@@ -154,9 +155,11 @@ public class FeatureToggleBinder<T>
         binder.bind(new TypeLiteral<Function<Object, Boolean>>() {}).annotatedWith(FeatureToggles.named(featureId)).toInstance(feature::check);
 
         if (baseClass != null) {
+            checkState(defaultClass == null, "Invalid Feature Toggle binding: base class without default class");
             // bind providers
             if (classes != null && classes.size() > 0) {
                 binder.bind(baseClass).annotatedWith(FeatureToggles.named(featureId)).toProvider(() -> baseClass.cast(feature.getCurrentInstance(featureId)));
+                configuration.setHotReloadable(true);
             }
             // simple implementation binding
             if (defaultClass != null) {

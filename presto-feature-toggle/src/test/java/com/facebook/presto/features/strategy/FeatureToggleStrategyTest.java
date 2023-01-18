@@ -41,6 +41,60 @@ public class FeatureToggleStrategyTest
 {
     private final Map<String, FeatureConfiguration> map = new HashMap<>();
 
+    /**
+     * test injection function that accepts object as parameter.
+     * <p>
+     * Function is used to evaluate string in BooleanStringStrategy feature toggle strategy
+     * <p>
+     * definition of the feature toggle with id "FunctionInjectionWithStrategy".
+     * BooleanStringStrategy will evaluate input string to enable or disable this Feature
+     * <pre>{@code
+     *      binder -> featureToggleBinder(binder)
+     *                         .registerToggleStrategy("BooleanStringStrategy", BooleanStringStrategy.class)
+     *                         .featureId("FunctionInjectionWithStrategy")
+     *                         .toggleStrategy("BooleanStringStrategy")
+     *                         .toggleStrategyConfig(ImmutableMap.of("allow-values", "yes,no"))
+     *                         .bind(),
+     * }</pre>
+     * <p>
+     * Feature Toggles injects function to parameter annotated with @FeatureToggle("FunctionInjectionWithStrategy")
+     * <pre>{@code
+     *         @Inject
+     *         public FunctionInjectionRunner(@FeatureToggle("FunctionInjectionFeature") Function<Object, Boolean> isFunctionInjectionFeatureEnabled)
+     *         {
+     *            this.isFunctionInjectionFeatureEnabled = isFunctionInjectionFeatureEnabled;
+     *         }
+     * }</pre>
+     * <p>
+     * Next, we will define binding of string provider to simulate dynamic change of value to be evaluated
+     * <pre>{@code
+     *          binder -> binder.bind(String.class).annotatedWith(Names.named("allowed")).toProvider(allowedReference::get)
+     * }</pre>
+     * allowed reference is container of the string value
+     * <pre>{@code
+     *          AtomicReference<String> allowedReference = new AtomicReference<>("");
+     * }</pre>
+     * <p>
+     * in first set of tests feature with id "BooleanStringStrategy" accepts "yes,no" values,
+     * if input param is yes strategy will evaluate this as true, in other casses will evaluate as false
+     * <pre>{@code
+     *      isFunctionInjectionWithStrategyEnabled.apply("yes") will return true
+     * }</pre>
+     * then we change run time configuration for feature, changing parameter "allow-values" to "true,false"
+     * <pre>{@code
+     *     FeatureToggleStrategyConfig featureToggleStrategyConfig = new FeatureToggleStrategyConfig("BooleanStringStrategy", ImmutableMap.of("allow-values", "true,false"));
+     *     map.put("FunctionInjectionWithStrategy", FeatureConfiguration.builder().featureToggleStrategyConfig(featureToggleStrategyConfig).build());
+     * }</pre>
+     * it is same as changing configuration param feature.{FunctionInjectionWithStrategy}.strategy.allow-values=yes,no
+     * <pre>{@code
+     *    feature.FunctionInjectionWithStrategy.strategy.allow-values=yes,no
+     * }</pre>
+     * after configuration change if input param is "true" strategy will evaluate this as true, in other casses will evaluate as false
+     * <pre>{@code
+     *           isFunctionInjectionWithStrategyEnabled.apply("true") // will return true
+     *           isFunctionInjectionWithStrategyEnabled.apply("yes") // will return false
+     *  }</pre>
+     */
     @Test
     public void testRegisterStrategy()
     {
