@@ -155,7 +155,7 @@ public class FeatureToggleBinder<T>
         binder.bind(new TypeLiteral<Function<Object, Boolean>>() {}).annotatedWith(FeatureToggles.named(featureId)).toInstance(feature::check);
 
         if (baseClass != null) {
-            checkState(defaultClass == null, "Invalid Feature Toggle binding: base class without default class");
+            checkState(defaultClass != null, "Invalid Feature Toggle binding: base class without default class");
             // bind providers
             if (classes != null && classes.size() > 0) {
                 binder.bind(baseClass).annotatedWith(FeatureToggles.named(featureId)).toProvider(() -> baseClass.cast(feature.getCurrentInstance(featureId)));

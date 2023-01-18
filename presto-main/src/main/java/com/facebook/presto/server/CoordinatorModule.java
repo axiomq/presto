@@ -152,10 +152,10 @@ public class CoordinatorModule
         // presto coordinator announcement
         discoveryBinder(binder).bindHttpAnnouncement("presto-coordinator");
 
-        install(installModuleIf(
-                FeatureToggleConfig.class,
-                featureToggleConfig -> "file".equalsIgnoreCase(featureToggleConfig.getConfigSourceType()),
-                new FileBasedFeatureToggleModule()));
+//        install(installModuleIf(
+//                FeatureToggleConfig.class,
+//                featureToggleConfig -> "file".equalsIgnoreCase(featureToggleConfig.getConfigSourceType()),
+//                new FileBasedFeatureToggleModule()));
 
         featureToggleBinder(binder, QueryRateLimiter.class)
                 .featureId("query-rate-limiter")
