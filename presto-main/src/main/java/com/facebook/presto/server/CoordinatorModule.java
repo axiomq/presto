@@ -179,6 +179,7 @@ public class CoordinatorModule
                 .featureId("query-cancel")
                 .enabled(true)
                 .toggleStrategy("AllowList")
+                .registerToggleStrategy("AllowList", AllowListToggleStrategy.class)
                 .toggleStrategyConfig(ImmutableMap.of("allow-list-source", ".*IDEA.*", "allow-list-user", ".*prestodb"))
                 .bind();
 

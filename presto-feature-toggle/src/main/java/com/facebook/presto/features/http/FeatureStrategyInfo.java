@@ -75,7 +75,7 @@ public class FeatureStrategyInfo
             FeatureStrategyInfo strategyInfo = new FeatureStrategyInfo();
             boolean active = strategyConfig.active();
             strategyInfo.setActive(active);
-            strategyInfo.setStrategyName(strategyConfig.getToggleStrategyClass());
+            strategyInfo.setStrategyName(strategyConfig.getToggleStrategyName());
             Map<String, String> configMap = new HashMap<>(strategyConfig.getConfigurationMap());
             if (configuration != null) {
                 Optional<FeatureToggleStrategyConfig> featureToggleStrategyConfigOptional = configuration.getFeatureConfiguration(feature.getFeatureId()).getFeatureToggleStrategyConfig();
@@ -84,7 +84,7 @@ public class FeatureStrategyInfo
                     if (configMap.containsKey("active")) {
                         strategyInfo.setActive(Boolean.parseBoolean(configMap.get("active")));
                     }
-                    strategyInfo.setStrategyName(featureToggleStrategyConfig.getToggleStrategyClass());
+                    strategyInfo.setStrategyName(featureToggleStrategyConfig.getToggleStrategyName());
                 });
             }
             strategyInfo.setConfig(configMap);

@@ -10,17 +10,17 @@ GET localhost:8080/v1/features?enabled=true
 ### features enabled=false
 GET localhost:8080/v1/features?enabled=false
 
-### features id=query
-GET localhost:8080/v1/features?id=query
+### features featureId=query
+GET localhost:8080/v1/features?featureId=query
 
-### features id=query&enabled=true
-GET localhost:8080/v1/features?id=query&enabled=true
+### features featureId=memory
+GET localhost:8080/v1/features?featureId=memory
 
-### features id=query&enabled=false
-GET localhost:8080/v1/features?id=query&enabled=false
+### features featureId=query&enabled=true
+GET localhost:8080/v1/features?featureId=query&enabled=true
 
-### features enabled ?
-GET localhost:8080/v1/features/query-cancel
+### features featureId=query&enabled=false
+GET localhost:8080/v1/features?featureId=query&enabled=false
 
 ### features /query-cancel
 GET localhost:8080/v1/features/query-cancel

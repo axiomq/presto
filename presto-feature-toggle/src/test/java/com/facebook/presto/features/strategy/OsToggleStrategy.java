@@ -22,6 +22,8 @@ import java.util.regex.Pattern;
 public class OsToggleStrategy
         implements FeatureToggleStrategy
 {
+    public static final String OS_TOGGLE = "OsToggle";
+
     private static final String OS_NAME = "os_name";
     private static final String OS_VERSION = "os_version";
     private static final String OS_ARCH = "os_arch";

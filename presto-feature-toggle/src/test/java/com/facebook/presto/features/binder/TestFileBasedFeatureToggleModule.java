@@ -28,8 +28,8 @@ import com.google.inject.Singleton;
 import com.google.inject.multibindings.MapBinder;
 
 import static com.facebook.presto.features.binder.TestConfigurationParser.parseConfiguration;
-import static com.facebook.presto.features.strategy.FeatureToggleStrategyFactory.ALLOW_ALL;
-import static com.facebook.presto.features.strategy.FeatureToggleStrategyFactory.OS_TOGGLE;
+import static com.facebook.presto.features.strategy.AllowAllStrategy.ALLOW_ALL;
+import static com.facebook.presto.features.strategy.OsToggleStrategy.OS_TOGGLE;
 import static com.google.common.base.Suppliers.memoizeWithExpiration;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 

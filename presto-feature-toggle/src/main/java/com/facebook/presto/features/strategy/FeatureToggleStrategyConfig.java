@@ -24,13 +24,13 @@ public class FeatureToggleStrategyConfig
     private static final String ACTIVE = "active";
 
     private final Map<String, String> configurationMap;
-    private final String strategyClass;
+    private final String strategyName;
 
     public FeatureToggleStrategyConfig(
-            String strategyClass,
+            String strategyName,
             Map<String, String> configurationMap)
     {
-        this.strategyClass = strategyClass;
+        this.strategyName = strategyName;
         this.configurationMap = configurationMap;
     }
 
@@ -42,9 +42,9 @@ public class FeatureToggleStrategyConfig
         return true;
     }
 
-    public String getToggleStrategyClass()
+    public String getToggleStrategyName()
     {
-        return strategyClass;
+        return strategyName;
     }
 
     public Map<String, String> getConfigurationMap()

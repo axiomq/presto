@@ -50,9 +50,6 @@ public class PrestoFeatureToggle
     {
         Feature<?> feature = featureMap.get(featureId);
         FeatureConfiguration featureConfiguration = feature.getConfiguration();
-        if (featureConfiguration.getHotReloadable()) {
-            return true;
-        }
         AtomicBoolean enabled = new AtomicBoolean(true);
         FeatureConfiguration configuration = featureToggleConfiguration.getFeatureConfiguration(featureId);
         if (configuration != null) {
@@ -61,7 +58,7 @@ public class PrestoFeatureToggle
             }
             enabled.set(configuration.isEnabled());
             if (configuration.getFeatureToggleStrategyConfig().isPresent()) {
-                String toggleStrategyClass = configuration.getFeatureToggleStrategyConfig().get().getToggleStrategyClass();
+                String toggleStrategyClass = configuration.getFeatureToggleStrategyConfig().get().getToggleStrategyName();
                 if (toggleStrategyClass != null) {
                     Optional<FeatureToggleStrategy> strategy = Optional.ofNullable(featureToggleStrategyFactory.get(toggleStrategyClass));
                     return strategy
@@ -72,7 +69,7 @@ public class PrestoFeatureToggle
         }
         else if (featureConfiguration.getFeatureToggleStrategyConfig().isPresent()) {
             FeatureToggleStrategyConfig featureToggleStrategyConfig = featureConfiguration.getFeatureToggleStrategyConfig().get();
-            String toggleStrategyClass = featureToggleStrategyConfig.getToggleStrategyClass();
+            String toggleStrategyClass = featureToggleStrategyConfig.getToggleStrategyName();
             if (toggleStrategyClass != null) {
                 Optional<FeatureToggleStrategy> strategy = Optional.ofNullable(featureToggleStrategyFactory.get(toggleStrategyClass));
                 return strategy
@@ -87,15 +84,12 @@ public class PrestoFeatureToggle
     {
         Feature<?> feature = featureMap.get(featureId);
         FeatureConfiguration featureConfiguration = feature.getConfiguration();
-        if (feature.getConfiguration().getHotReloadable()) {
-            return true;
-        }
         AtomicBoolean enabled = new AtomicBoolean(feature.isEnabled());
         FeatureConfiguration configuration = featureToggleConfiguration.getFeatureConfiguration(featureId);
         if (configuration != null) {
             enabled.set(configuration.isEnabled());
             if (configuration.getFeatureToggleStrategyConfig().isPresent()) {
-                String toggleStrategyClass = configuration.getFeatureToggleStrategyConfig().get().getToggleStrategyClass();
+                String toggleStrategyClass = configuration.getFeatureToggleStrategyConfig().get().getToggleStrategyName();
                 if (toggleStrategyClass != null) {
                     Optional<FeatureToggleStrategy> strategy = Optional.ofNullable(featureToggleStrategyFactory.get(toggleStrategyClass));
                     return strategy
@@ -106,7 +100,7 @@ public class PrestoFeatureToggle
         }
         else if (featureConfiguration.getFeatureToggleStrategyConfig().isPresent()) {
             FeatureToggleStrategyConfig featureToggleStrategyConfig = featureConfiguration.getFeatureToggleStrategyConfig().get();
-            String toggleStrategyClass = featureToggleStrategyConfig.getToggleStrategyClass();
+            String toggleStrategyClass = featureToggleStrategyConfig.getToggleStrategyName();
             if (toggleStrategyClass != null) {
                 Optional<FeatureToggleStrategy> strategy = Optional.ofNullable(featureToggleStrategyFactory.get(toggleStrategyClass));
                 return strategy

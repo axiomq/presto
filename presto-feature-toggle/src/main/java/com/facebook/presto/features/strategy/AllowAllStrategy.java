@@ -13,7 +13,13 @@
  */
 package com.facebook.presto.features.strategy;
 
+/**
+ * Dummy implementation of the FeatureToggle Strategy
+ * <p>
+ * Using this feature toggle strategy doesn't affect feature toggle status
+ */
 public class AllowAllStrategy
         implements FeatureToggleStrategy
 {
+    public static final String ALLOW_ALL = "AllowAll";
 }
