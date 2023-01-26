@@ -27,8 +27,7 @@ import com.google.inject.multibindings.MapBinder;
 
 import java.util.Map;
 
-import static com.facebook.presto.features.strategy.FeatureToggleStrategyFactory.ALLOW_ALL;
-import static com.facebook.presto.features.strategy.FeatureToggleStrategyFactory.OS_TOGGLE;
+import static com.facebook.presto.features.strategy.AllowAllStrategy.ALLOW_ALL;
 import static com.google.common.base.Suppliers.memoizeWithExpiration;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -43,7 +42,6 @@ public class TestFeatureToggleModule
     {
         MapBinder<String, FeatureToggleStrategy> featureToggleStrategyMap = MapBinder.newMapBinder(binder, String.class, FeatureToggleStrategy.class);
         featureToggleStrategyMap.addBinding(ALLOW_ALL).to(AllowAllStrategy.class);
-        featureToggleStrategyMap.addBinding(OS_TOGGLE).to(OsToggleStrategy.class);
         binder.bind(PrestoFeatureToggle.class).in(Singleton.class);
     }
 

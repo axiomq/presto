@@ -14,6 +14,7 @@
 package com.facebook.presto.features.strategy;
 
 import com.facebook.presto.SessionRepresentation;
+import com.facebook.presto.common.transaction.TransactionId;
 import com.facebook.presto.common.type.TimeZoneKey;
 import com.facebook.presto.dispatcher.NoOpQueryManager;
 import com.facebook.presto.execution.QueryManager;
@@ -25,7 +26,6 @@ import com.facebook.presto.server.BasicQueryInfo;
 import com.facebook.presto.server.BasicQueryStats;
 import com.facebook.presto.spi.QueryId;
 import com.facebook.presto.spi.session.ResourceEstimates;
-import com.facebook.presto.transaction.TransactionId;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
