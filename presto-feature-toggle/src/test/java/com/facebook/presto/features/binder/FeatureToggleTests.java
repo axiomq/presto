@@ -372,23 +372,6 @@ public class FeatureToggleTests
         }
     }
 
-    private static class SimpleBindingReloadRunner
-    {
-        private final HotReloadFeature hotReloadFeature;
-
-        @Inject
-        public SimpleBindingReloadRunner(HotReloadFeature hotReloadFeature)
-        {
-            this.hotReloadFeature = hotReloadFeature;
-        }
-
-        public String testHotReloadFeature()
-        {
-//            return hotReloadFeature.get().test();
-            return "";
-        }
-    }
-
     private static class ProviderInjectionRunner
     {
         private final Provider<ProviderFeature> providerFeature;

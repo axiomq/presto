@@ -25,6 +25,7 @@ import com.google.inject.Provider;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import io.airlift.units.Duration;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -59,6 +60,32 @@ public class FileBasedFeatureToggleStrategyTest
 {
     private static final String FEATURE_ID = "FunctionInjectionWithStrategy";
 
+    private FeatureToggleConfig config;
+
+    @BeforeTest
+    public void prepare()
+    {
+        /*
+            from presto configuration file:
+            features.config-source-type=file
+            features.config-source=feature-toggle.properties
+            features.config-type=properties
+            features.refresh-period=5s
+         */
+        config = new FeatureToggleConfig();
+        config.setConfigSourceType("file");
+        config.setConfigSource("feature-toggle.properties");
+        config.setConfigType("properties");
+        config.setRefreshPeriod(Duration.valueOf("5s"));
+
+        // actual file for test is located in target/test-classes/feature-toggle.properties
+        // sets feature toggle initial values
+        // in case of consecutive runs, values can be set to invalid values
+        updateProperty(config, "feature.FunctionInjectionWithStrategy.enabled", "true");
+        updateProperty(config, "feature.FunctionInjectionWithStrategy.strategy", "BooleanString");
+        updateProperty(config, "feature.FunctionInjectionWithStrategy.strategy.allow-values", "yes,no");
+    }
+
     @Test
     public void testRegisterStrategy()
     {
@@ -77,10 +104,8 @@ public class FileBasedFeatureToggleStrategyTest
         config.setConfigType("properties");
         config.setRefreshPeriod(Duration.valueOf("5s"));
 
-        // setting default values
-        // in case of consecutive runs, values can be set to invalid values
+        // default value for allow-values is yes,no
         // feature.FunctionInjectionWithStrategy.strategy.allow-values=yes,no
-        updateProperty(config, "feature" + "." + FEATURE_ID + "." + "strategy" + "." + BooleanStringStrategy.ALLOW_VALUES, BooleanStringStrategy.YES_NO);
 
         Injector injector = Guice.createInjector(
                 // file based Feature Toggle Module reads feature toggle configuration from classpath file
@@ -119,7 +144,7 @@ public class FileBasedFeatureToggleStrategyTest
 
         // change configuration property
         // feature.FunctionInjectionWithStrategy.strategy.allow-values=true,false
-        updateProperty(config, "feature" + "." + FEATURE_ID + "." + "strategy" + "." + BooleanStringStrategy.ALLOW_VALUES, BooleanStringStrategy.TRUE_FALSE);
+        updateProperty(config, "feature.FunctionInjectionWithStrategy.strategy.allow-values", "true,false");
         sleep();
 
         allowedReference.set("yes");
@@ -142,7 +167,7 @@ public class FileBasedFeatureToggleStrategyTest
         // disabling feature
         // if feature is disabled, toggle strategy is not evaluated
         // feature.FunctionInjectionWithStrategy.enabled=false
-        updateProperty(config, "feature" + "." + FEATURE_ID + "." + "enabled", "false");
+        updateProperty(config, "feature.FunctionInjectionWithStrategy.enabled", "false");
         sleep();
 
         allowedReference.set("yes");
