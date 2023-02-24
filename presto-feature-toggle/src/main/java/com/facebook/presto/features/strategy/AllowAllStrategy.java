@@ -18,6 +18,7 @@ package com.facebook.presto.features.strategy;
  * <p>
  * Using this feature toggle strategy doesn't affect feature toggle status
  */
+@SuppressWarnings("checkstyle:HideUtilityClassConstructor")
 public class AllowAllStrategy
         implements FeatureToggleStrategy
 {
