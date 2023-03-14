@@ -15,15 +15,13 @@ package com.facebook.presto.features.annotations;
 
 import com.google.inject.internal.Annotations;
 
-import java.io.Serializable;
 import java.lang.annotation.Annotation;
 
 import static java.util.Objects.requireNonNull;
 
 public class FeatureToggleImpl
-        implements FeatureToggle, Serializable
+        implements FeatureToggle
 {
-    private static final long serialVersionUID = 0;
     private final String value;
 
     public FeatureToggleImpl(String value)

@@ -150,7 +150,7 @@ public class FeatureToggleInfo
     @Produces(MediaType.APPLICATION_JSON)
     public Response info(@QueryParam("enabled") Boolean enabled, @QueryParam("featureId") String featureId)
     {
-        List<FeatureInfo> infoList = FeatureInfo.featureToggle(featureToggle);
+        List<FeatureInfo> infoList = FeatureInfo.featureInfos(featureToggle);
         if (enabled != null) {
             infoList = infoList.stream()
                     .filter(feature -> {
@@ -244,7 +244,7 @@ public class FeatureToggleInfo
     public Response details(@PathParam("featureId") String featureId)
     {
         if (featureToggle.getFeatureMap().get(featureId) != null) {
-            return Response.ok().entity(FeatureDetails.details(featureToggle, featureId, featureToggle.getFeatureToggleConfiguration())).build();
+            return Response.ok().entity(FeatureDetails.details(featureToggle, featureId)).build();
         }
         return Response.noContent().build();
     }

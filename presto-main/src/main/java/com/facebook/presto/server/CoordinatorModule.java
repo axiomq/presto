@@ -58,8 +58,6 @@ import com.facebook.presto.execution.scheduler.SectionExecutionFactory;
 import com.facebook.presto.execution.scheduler.SplitSchedulerStats;
 import com.facebook.presto.failureDetector.FailureDetectorModule;
 import com.facebook.presto.features.binder.PrestoFeatureToggle;
-import com.facebook.presto.features.config.FeatureToggleConfig;
-import com.facebook.presto.features.config.FileBasedFeatureToggleModule;
 import com.facebook.presto.features.http.FeatureToggleInfo;
 import com.facebook.presto.features.strategy.AllowListToggleStrategy;
 import com.facebook.presto.memory.ClusterMemoryManager;

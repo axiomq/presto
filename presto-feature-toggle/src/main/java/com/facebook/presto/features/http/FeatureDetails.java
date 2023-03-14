@@ -17,27 +17,31 @@ import com.facebook.drift.annotations.ThriftField;
 import com.facebook.drift.annotations.ThriftStruct;
 import com.facebook.presto.features.binder.Feature;
 import com.facebook.presto.features.binder.PrestoFeatureToggle;
-import com.facebook.presto.features.config.FeatureConfiguration;
-import com.facebook.presto.features.config.FeatureToggleConfiguration;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import static com.facebook.presto.features.http.FeatureInfo.getActiveFeatureInfo;
+import static com.facebook.presto.features.http.FeatureInfo.getInitialFeatureInfo;
+import static com.facebook.presto.features.http.FeatureInfo.getOverrideFeatureInfo;
 
 @ThriftStruct
 public class FeatureDetails
 {
-    private FeatureInfo initialConfiguration;
-    private FeatureInfo configurationOverride;
-    private FeatureInfo activeConfiguration;
+    private final FeatureInfo initialConfiguration;
+    private final FeatureInfo configurationOverride;
+    private final FeatureInfo activeConfiguration;
+
+    public FeatureDetails(FeatureInfo initialConfiguration, FeatureInfo configurationOverride, FeatureInfo activeConfiguration)
+    {
+        this.initialConfiguration = initialConfiguration;
+        this.configurationOverride = configurationOverride;
+        this.activeConfiguration = activeConfiguration;
+    }
 
     @JsonProperty
     @ThriftField(1)
     public FeatureInfo getInitialConfiguration()
     {
         return initialConfiguration;
-    }
-
-    public void setInitialConfiguration(FeatureInfo initialConfiguration)
-    {
-        this.initialConfiguration = initialConfiguration;
     }
 
     @JsonProperty
@@ -47,11 +51,6 @@ public class FeatureDetails
         return configurationOverride;
     }
 
-    public void setConfigurationOverride(FeatureInfo configurationOverride)
-    {
-        this.configurationOverride = configurationOverride;
-    }
-
     @JsonProperty
     @ThriftField(3)
     public FeatureInfo getActiveConfiguration()
@@ -59,40 +58,12 @@ public class FeatureDetails
         return activeConfiguration;
     }
 
-    public void setActiveConfiguration(FeatureInfo activeConfiguration)
+    static FeatureDetails details(PrestoFeatureToggle prestoFeatureToggle, String featureId)
     {
-        this.activeConfiguration = activeConfiguration;
-    }
-
-    public static FeatureDetails details(PrestoFeatureToggle featureToggle, String featureId, FeatureToggleConfiguration configuration)
-    {
-        Feature<?> feature = featureToggle.getFeatureMap().get(featureId);
-        FeatureInfo initialFeatureInfo = new FeatureInfo();
-        initialFeatureInfo.setFeatureId(featureId);
-        initialFeatureInfo.setEnabled(feature.getConfiguration().isEnabled());
-        initialFeatureInfo.setFeatureClass(feature.getConfiguration().getFeatureClass());
-        initialFeatureInfo.setDefaultInstance(feature.getConfiguration().getDefaultInstance());
-        initialFeatureInfo.setCurrentInstance(feature.getConfiguration().getCurrentInstance());
-        if (feature.getConfiguration().getFeatureToggleStrategyConfig().isPresent()) {
-            initialFeatureInfo.setStrategy(FeatureStrategyInfo.strategy(feature, null));
-        }
-        FeatureDetails featureDetails = new FeatureDetails();
-        featureDetails.setInitialConfiguration(initialFeatureInfo);
-
-        FeatureConfiguration featureConfigurationOverride = configuration.getFeatureConfiguration(featureId);
-        FeatureInfo overrideFeatureInfo = new FeatureInfo();
-        overrideFeatureInfo.setFeatureId(featureId);
-        overrideFeatureInfo.setEnabled(featureConfigurationOverride.isEnabled());
-        String currentInstanceClass = featureConfigurationOverride.getCurrentInstance();
-        if (currentInstanceClass != null) {
-            overrideFeatureInfo.setCurrentInstance(currentInstanceClass);
-        }
-        if (featureConfigurationOverride.getFeatureToggleStrategyConfig().isPresent()) {
-            overrideFeatureInfo.setStrategy(FeatureStrategyInfo.strategy(feature, configuration));
-        }
-        featureDetails.setConfigurationOverride(overrideFeatureInfo);
-
-        featureDetails.setActiveConfiguration(FeatureInfo.getFeatureInfo(featureToggle, feature));
-        return featureDetails;
+        Feature<?> feature = prestoFeatureToggle.getFeatureMap().get(featureId);
+        FeatureInfo initialFeatureInfo = getInitialFeatureInfo(feature);
+        FeatureInfo overrideFeatureInfo = getOverrideFeatureInfo(feature, prestoFeatureToggle);
+        FeatureInfo activeFeatureInfo = getActiveFeatureInfo(feature, prestoFeatureToggle);
+        return new FeatureDetails(initialFeatureInfo, overrideFeatureInfo, activeFeatureInfo);
     }
 }

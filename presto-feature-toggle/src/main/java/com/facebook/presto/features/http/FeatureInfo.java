@@ -17,6 +17,7 @@ import com.facebook.drift.annotations.ThriftField;
 import com.facebook.drift.annotations.ThriftStruct;
 import com.facebook.presto.features.binder.Feature;
 import com.facebook.presto.features.binder.PrestoFeatureToggle;
+import com.facebook.presto.features.config.FeatureConfiguration;
 import com.facebook.presto.features.config.FeatureToggleConfiguration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -27,24 +28,37 @@ import java.util.stream.Collectors;
 @ThriftStruct
 public class FeatureInfo
 {
-    private String featureId;
-    private boolean enabled;
-    private String featureClass;
-    private List<String> featureInstances;
-    private String currentInstance;
-    private String defaultInstance;
-    private FeatureStrategyInfo strategy;
+    private final String featureId;
+    private final boolean enabled;
+    private final String featureClass;
+    private final List<String> featureInstances;
+    private final String currentInstance;
+    private final String defaultInstance;
+    private final FeatureStrategyInfo strategy;
+
+    public FeatureInfo(
+            String featureId,
+            boolean enabled,
+            String featureClass,
+            List<String> featureInstances,
+            String currentInstance,
+            String defaultInstance,
+            FeatureStrategyInfo strategy)
+    {
+        this.featureId = featureId;
+        this.enabled = enabled;
+        this.featureClass = featureClass;
+        this.featureInstances = featureInstances;
+        this.currentInstance = currentInstance;
+        this.defaultInstance = defaultInstance;
+        this.strategy = strategy;
+    }
 
     @JsonProperty
     @ThriftField(1)
     public String getFeatureId()
     {
         return featureId;
-    }
-
-    public void setFeatureId(String featureId)
-    {
-        this.featureId = featureId;
     }
 
     @JsonProperty
@@ -54,21 +68,11 @@ public class FeatureInfo
         return enabled;
     }
 
-    public void setEnabled(boolean enabled)
-    {
-        this.enabled = enabled;
-    }
-
     @JsonProperty
     @ThriftField(1)
     public String getFeatureClass()
     {
         return featureClass;
-    }
-
-    public void setFeatureClass(String featureClass)
-    {
-        this.featureClass = featureClass;
     }
 
     @JsonProperty
@@ -78,21 +82,11 @@ public class FeatureInfo
         return featureInstances;
     }
 
-    public void setFeatureInstances(List<String> featureInstances)
-    {
-        this.featureInstances = featureInstances;
-    }
-
     @JsonProperty
     @ThriftField(1)
     public String getCurrentInstance()
     {
         return currentInstance;
-    }
-
-    public void setCurrentInstance(String currentInstance)
-    {
-        this.currentInstance = currentInstance;
     }
 
     @JsonProperty
@@ -102,11 +96,6 @@ public class FeatureInfo
         return defaultInstance;
     }
 
-    public void setDefaultInstance(String defaultInstance)
-    {
-        this.defaultInstance = defaultInstance;
-    }
-
     @JsonProperty
     @ThriftField(1)
     public FeatureStrategyInfo getStrategy()
@@ -114,39 +103,62 @@ public class FeatureInfo
         return strategy;
     }
 
-    public void setStrategy(FeatureStrategyInfo strategy)
-    {
-        this.strategy = strategy;
-    }
-
-    public static List<FeatureInfo> featureToggle(PrestoFeatureToggle prestoFeatureToggle)
+    static List<FeatureInfo> featureInfos(PrestoFeatureToggle prestoFeatureToggle)
     {
         Map<String, Feature<?>> featureMap = prestoFeatureToggle.getFeatureMap();
-
         return featureMap.values().stream()
-                .map(feature -> getFeatureInfo(prestoFeatureToggle, feature))
+                .map(feature -> getActiveFeatureInfo(feature, prestoFeatureToggle))
                 .collect(Collectors.toList());
     }
 
-    public static FeatureInfo getFeatureInfo(PrestoFeatureToggle prestoFeatureToggle, Feature<?> feature)
+    static FeatureInfo getActiveFeatureInfo(Feature<?> feature, PrestoFeatureToggle prestoFeatureToggle)
     {
-        FeatureToggleConfiguration configuration = prestoFeatureToggle.getFeatureToggleConfiguration();
         String featureId = feature.getFeatureId();
-        FeatureInfo info = new FeatureInfo();
-        info.setFeatureId(featureId);
-        info.setEnabled(prestoFeatureToggle.isEnabled(featureId));
-        info.setFeatureClass(feature.getConfiguration().getFeatureClass());
-        info.setDefaultInstance(feature.getConfiguration().getDefaultInstance());
         Object featureCurrentInstance = feature.getCurrentInstance(featureId);
         String currentInstanceClass = null;
         if (featureCurrentInstance != null) {
             currentInstanceClass = featureCurrentInstance.getClass().getName();
         }
-        info.setCurrentInstance(currentInstanceClass);
-        info.setFeatureInstances(feature.getConfiguration().getFeatureInstances());
-        if (feature.getConfiguration().getFeatureToggleStrategyConfig().isPresent()) {
-            info.setStrategy(FeatureStrategyInfo.strategy(feature, configuration));
-        }
-        return info;
+
+        FeatureToggleConfiguration featureToggleConfiguration = prestoFeatureToggle.getFeatureToggleConfiguration();
+        FeatureStrategyInfo featureStrategyInfo = FeatureStrategyInfo.activeFeatureStrategyInfo(feature, featureToggleConfiguration);
+
+        return new FeatureInfo(
+                featureId,
+                prestoFeatureToggle.isEnabled(featureId),
+                feature.getConfiguration().getFeatureClass(),
+                feature.getConfiguration().getFeatureInstances(),
+                currentInstanceClass,
+                feature.getConfiguration().getDefaultInstance(),
+                featureStrategyInfo);
+    }
+
+    static FeatureInfo getOverrideFeatureInfo(Feature<?> feature, PrestoFeatureToggle prestoFeatureToggle)
+    {
+        FeatureToggleConfiguration featureToggleConfiguration = prestoFeatureToggle.getFeatureToggleConfiguration();
+        FeatureConfiguration featureConfigurationOverride = featureToggleConfiguration.getFeatureConfiguration(feature.getFeatureId());
+        String currentInstanceClass = featureConfigurationOverride.getCurrentInstance();
+        FeatureStrategyInfo overrideFeatureStrategyInfo = FeatureStrategyInfo.overrideFeatureStrategyInfo(feature, featureToggleConfiguration);
+        return new FeatureInfo(
+                feature.getFeatureId(),
+                featureConfigurationOverride.isEnabled(),
+                null,
+                null,
+                currentInstanceClass,
+                null,
+                overrideFeatureStrategyInfo);
+    }
+
+    static FeatureInfo getInitialFeatureInfo(Feature<?> feature)
+    {
+        FeatureStrategyInfo featureStrategyInfo = FeatureStrategyInfo.initialFeatureStrategyInfo(feature);
+        return new FeatureInfo(
+                feature.getFeatureId(),
+                feature.isEnabled(),
+                feature.getConfiguration().getFeatureClass(),
+                feature.getConfiguration().getFeatureInstances(),
+                feature.getConfiguration().getDefaultInstance(),
+                feature.getConfiguration().getDefaultInstance(),
+                featureStrategyInfo);
     }
 }
