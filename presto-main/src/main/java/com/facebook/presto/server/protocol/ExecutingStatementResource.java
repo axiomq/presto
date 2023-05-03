@@ -185,13 +185,13 @@ public class ExecutingStatementResource
             @PathParam("token") long token,
             @QueryParam("slug") String slug)
     {
-        boolean cancelEnabled = isQueryCancelEnabled.apply(queryId);
-        if (cancelEnabled) {
-            queryProvider.cancel(queryId, slug);
-            return Response.noContent().build();
-        }
-        else {
-            throw new RuntimeException("Cancel is not allowed!");
-        }
+//        boolean cancelEnabled = isQueryCancelEnabled.apply(queryId);
+//        if (cancelEnabled) {
+        queryProvider.cancel(queryId, slug);
+        return Response.noContent().build();
+//        }
+//        else {
+//            throw new RuntimeException("Cancel is not allowed!");
+//        }
     }
 }
