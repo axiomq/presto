@@ -17,19 +17,21 @@ import com.facebook.presto.features.config.FeatureConfiguration;
 
 public class Feature<T>
 {
-    private String featureId;
-    private Class<T> baseClass;
-    private FeatureConfiguration configuration;
+    private final String featureId;
+    private final Class<T> baseClass;
+    private final FeatureConfiguration configuration;
     private PrestoFeatureToggle prestoFeatureToggle;
+
+    public Feature(String featureId, Class<T> baseClass, FeatureConfiguration configuration)
+    {
+        this.featureId = featureId;
+        this.baseClass = baseClass;
+        this.configuration = configuration;
+    }
 
     public String getFeatureId()
     {
         return featureId;
-    }
-
-    public void setFeatureId(String featureId)
-    {
-        this.featureId = featureId;
     }
 
     public boolean isEnabled()
@@ -40,11 +42,6 @@ public class Feature<T>
     public FeatureConfiguration getConfiguration()
     {
         return configuration;
-    }
-
-    public void setConfiguration(FeatureConfiguration configuration)
-    {
-        this.configuration = configuration;
     }
 
     public void setContext(PrestoFeatureToggle prestoFeatureToggle)
@@ -66,10 +63,5 @@ public class Feature<T>
             return null;
         }
         return baseClass.cast(prestoFeatureToggle.getCurrentInstance(featureId));
-    }
-
-    public void setBaseClass(Class<T> baseClass)
-    {
-        this.baseClass = baseClass;
     }
 }

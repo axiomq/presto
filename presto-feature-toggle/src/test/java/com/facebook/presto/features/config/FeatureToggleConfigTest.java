@@ -13,7 +13,6 @@
  */
 package com.facebook.presto.features.config;
 
-import com.facebook.airlift.configuration.ConfigurationFactory;
 import com.facebook.airlift.configuration.testing.ConfigAssertions;
 import com.google.common.collect.ImmutableMap;
 import io.airlift.units.Duration;
@@ -31,12 +30,6 @@ import static com.facebook.presto.features.config.FeatureToggleConfig.FEATURES_R
 
 public class FeatureToggleConfigTest
 {
-    private static FeatureToggleConfig newInstance(Map<String, String> properties)
-    {
-        ConfigurationFactory configurationFactory = new ConfigurationFactory(properties);
-        return configurationFactory.build(FeatureToggleConfig.class);
-    }
-
     @Test
     public void testDefaults()
     {

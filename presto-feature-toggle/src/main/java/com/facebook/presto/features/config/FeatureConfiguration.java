@@ -13,7 +13,6 @@
  */
 package com.facebook.presto.features.config;
 
-import com.facebook.airlift.json.JsonCodec;
 import com.facebook.presto.features.strategy.FeatureToggleStrategyConfig;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -24,12 +23,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.facebook.airlift.json.JsonCodec.jsonCodec;
-
 public class FeatureConfiguration
 {
-    private static final JsonCodec<FeatureConfiguration> FEATURE_CONFIGURATION_JSON_CODEC = jsonCodec(FeatureConfiguration.class);
-
     private String featureId;
     private boolean enabled;
     private String featureClass;
@@ -58,11 +53,6 @@ public class FeatureConfiguration
         this.currentInstance = currentInstance;
         this.defaultInstance = defaultInstance;
         this.featureToggleStrategyConfig = featureToggleStrategyConfig;
-    }
-
-    public static FeatureConfiguration fromJson(String json)
-    {
-        return FEATURE_CONFIGURATION_JSON_CODEC.fromJson(json);
     }
 
     public static FeatureConfigurationBuilder builder()

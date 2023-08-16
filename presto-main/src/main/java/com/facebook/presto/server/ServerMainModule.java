@@ -756,6 +756,12 @@ public class ServerMainModule
                         .to(TempStorageSingleStreamSpillerFactory.class)
                         .in(Scopes.SINGLETON)));
 
+//        FeatureToggleConfig featureToggleConfig = buildConfigObject(FeatureToggleConfig.class);
+//        install(installModuleIf(
+//                FeatureToggleConfig.class,
+//                config -> "file".equalsIgnoreCase(config.getConfigSourceType()),
+//                new FileBasedFeatureToggleModule(featureToggleConfig)));
+
         install(installModuleIf(
                 FeatureToggleConfig.class,
                 featureToggleConfig -> "file".equalsIgnoreCase(featureToggleConfig.getConfigSourceType()),

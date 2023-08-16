@@ -37,8 +37,8 @@ public class PrestoFeatureToggleTest
     private final Map<String, FeatureConfiguration> config = new HashMap<>();
 
     private Map<String, Feature<?>> featureMap;
-    private Map<String, Object> featureInstanceMap = new HashMap<>();
-    private FeatureToggleStrategyFactory featureToggleStrategyFactory = new FeatureToggleStrategyFactory(ImmutableMap.of("BooleanString", new BooleanStringStrategy()));
+    private final Map<String, Object> featureInstanceMap = new HashMap<>();
+    private final FeatureToggleStrategyFactory featureToggleStrategyFactory = new FeatureToggleStrategyFactory(ImmutableMap.of("BooleanString", new BooleanStringStrategy()));
     private FeatureToggleConfiguration featureToggleConfiguration;
 
     private static final String simpleFeatureId = "simple-feature";
@@ -54,18 +54,14 @@ public class PrestoFeatureToggleTest
         FeatureConfiguration simpleFeatureConfiguration = FeatureConfiguration.builder()
                 .featureId(simpleFeatureId)
                 .build();
-        Feature<String> simpleFeature = new Feature<>();
-        simpleFeature.setFeatureId(simpleFeatureId);
-        simpleFeature.setConfiguration(simpleFeatureConfiguration);
+        Feature<String> simpleFeature = new Feature<>(simpleFeatureId, null, simpleFeatureConfiguration);
         featureMap.put(simpleFeatureId, simpleFeature);
 
         FeatureConfiguration simpleFeatureWithStrategyToggleConfiguration = FeatureConfiguration.builder()
                 .featureId(simpleFeatureWithStrategyToggleId)
                 .featureToggleStrategyConfig(booleanStringStrategyConfig)
                 .build();
-        Feature<String> simpleFeatureWithStrategyToggle = new Feature<>();
-        simpleFeatureWithStrategyToggle.setFeatureId(simpleFeatureWithStrategyToggleId);
-        simpleFeatureWithStrategyToggle.setConfiguration(simpleFeatureWithStrategyToggleConfiguration);
+        Feature<String> simpleFeatureWithStrategyToggle = new Feature<>(simpleFeatureWithStrategyToggleId, null, simpleFeatureWithStrategyToggleConfiguration);
         featureMap.put(simpleFeatureWithStrategyToggleId, simpleFeatureWithStrategyToggle);
 
         featureToggleConfiguration = new FileBasedFeatureToggleConfiguration(config);

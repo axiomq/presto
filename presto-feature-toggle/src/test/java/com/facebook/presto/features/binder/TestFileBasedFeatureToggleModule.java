@@ -27,7 +27,7 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.MapBinder;
 
-import static com.facebook.presto.features.binder.TestConfigurationParser.parseConfiguration;
+import static com.facebook.presto.features.config.TestConfigurationParser.parseConfiguration;
 import static com.facebook.presto.features.strategy.AllowAllStrategy.ALLOW_ALL;
 import static com.facebook.presto.features.strategy.OsToggleStrategy.OS_TOGGLE;
 import static com.google.common.base.Suppliers.memoizeWithExpiration;

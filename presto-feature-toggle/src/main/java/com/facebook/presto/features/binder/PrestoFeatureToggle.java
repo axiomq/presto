@@ -22,7 +22,6 @@ import com.facebook.presto.features.strategy.FeatureToggleStrategyFactory;
 import com.google.inject.Inject;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PrestoFeatureToggle
@@ -60,10 +59,13 @@ public class PrestoFeatureToggle
             if (configuration.getFeatureToggleStrategyConfig().isPresent()) {
                 String toggleStrategyClass = configuration.getFeatureToggleStrategyConfig().get().getToggleStrategyName();
                 if (toggleStrategyClass != null) {
-                    Optional<FeatureToggleStrategy> strategy = Optional.ofNullable(featureToggleStrategyFactory.get(toggleStrategyClass));
-                    return strategy
-                            .map(featureToggleStrategy -> enabled.get() && featureToggleStrategy.check(configuration))
-                            .orElse(enabled.get());
+                    FeatureToggleStrategy strategy = featureToggleStrategyFactory.get(toggleStrategyClass);
+                    if (strategy != null) {
+                        return enabled.get() && strategy.check(configuration);
+                    }
+                    else {
+                        return enabled.get();
+                    }
                 }
             }
         }
@@ -71,10 +73,13 @@ public class PrestoFeatureToggle
             FeatureToggleStrategyConfig featureToggleStrategyConfig = featureConfiguration.getFeatureToggleStrategyConfig().get();
             String toggleStrategyClass = featureToggleStrategyConfig.getToggleStrategyName();
             if (toggleStrategyClass != null) {
-                Optional<FeatureToggleStrategy> strategy = Optional.ofNullable(featureToggleStrategyFactory.get(toggleStrategyClass));
-                return strategy
-                        .map(featureToggleStrategy -> enabled.get() && featureToggleStrategy.check(featureConfiguration))
-                        .orElse(enabled.get());
+                FeatureToggleStrategy strategy = featureToggleStrategyFactory.get(toggleStrategyClass);
+                if (strategy != null) {
+                    return enabled.get() && strategy.check(featureConfiguration);
+                }
+                else {
+                    return enabled.get();
+                }
             }
         }
         return enabled.get();
@@ -91,10 +96,13 @@ public class PrestoFeatureToggle
             if (configuration.getFeatureToggleStrategyConfig().isPresent()) {
                 String toggleStrategyClass = configuration.getFeatureToggleStrategyConfig().get().getToggleStrategyName();
                 if (toggleStrategyClass != null) {
-                    Optional<FeatureToggleStrategy> strategy = Optional.ofNullable(featureToggleStrategyFactory.get(toggleStrategyClass));
-                    return strategy
-                            .map(featureToggleStrategy -> enabled.get() && featureToggleStrategy.check(configuration, object))
-                            .orElse(enabled.get());
+                    FeatureToggleStrategy strategy = featureToggleStrategyFactory.get(toggleStrategyClass);
+                    if (strategy != null) {
+                        return enabled.get() && strategy.check(configuration, object);
+                    }
+                    else {
+                        return enabled.get();
+                    }
                 }
             }
         }
@@ -102,10 +110,13 @@ public class PrestoFeatureToggle
             FeatureToggleStrategyConfig featureToggleStrategyConfig = featureConfiguration.getFeatureToggleStrategyConfig().get();
             String toggleStrategyClass = featureToggleStrategyConfig.getToggleStrategyName();
             if (toggleStrategyClass != null) {
-                Optional<FeatureToggleStrategy> strategy = Optional.ofNullable(featureToggleStrategyFactory.get(toggleStrategyClass));
-                return strategy
-                        .map(featureToggleStrategy -> enabled.get() && featureToggleStrategy.check(featureConfiguration, object))
-                        .orElse(enabled.get());
+                FeatureToggleStrategy strategy = featureToggleStrategyFactory.get(toggleStrategyClass);
+                if (strategy != null) {
+                    return enabled.get() && strategy.check(featureConfiguration, object);
+                }
+                else {
+                    return enabled.get();
+                }
             }
         }
         return enabled.get();
@@ -124,7 +135,7 @@ public class PrestoFeatureToggle
         if (defaultInstance != null) {
             return featureInstanceMap.get(defaultInstance);
         }
-        else if (feature.getConfiguration().getFeatureInstances() != null && feature.getConfiguration().getFeatureInstances().size() > 0) {
+        else if (feature.getConfiguration().getFeatureInstances() != null && !feature.getConfiguration().getFeatureInstances().isEmpty()) {
             return featureInstanceMap.get(feature.getConfiguration().getFeatureInstances().get(0));
         }
         else {

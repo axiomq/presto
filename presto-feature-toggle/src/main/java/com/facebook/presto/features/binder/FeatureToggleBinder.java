@@ -21,8 +21,6 @@ import com.google.inject.Binder;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
 
-import javax.validation.constraints.NotNull;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
@@ -81,27 +79,29 @@ public class FeatureToggleBinder<T>
         return new FeatureToggleBinder<>(binder);
     }
 
-    public FeatureToggleBinder<T> baseClass(@NotNull Class<T> baseClass)
+    public FeatureToggleBinder<T> baseClass(Class<T> baseClass)
     {
+        requireNonNull(baseClass, "base class is null");
         return new FeatureToggleBinder<>(binder, baseClass, defaultClass, classes, hotReloadable, strategy, featureId, enabled, strategyConfigMap);
     }
 
-    public FeatureToggleBinder<T> featureId(@NotNull String featureId)
+    public FeatureToggleBinder<T> featureId(String featureId)
     {
-        this.featureId = featureId;
+        this.featureId = requireNonNull(featureId, "feature ID is null");
         return this;
     }
 
-    public FeatureToggleBinder<T> defaultClass(@NotNull Class<? extends T> defaultClass)
+    public FeatureToggleBinder<T> defaultClass(Class<? extends T> defaultClass)
     {
-        this.defaultClass = defaultClass;
+        this.defaultClass = requireNonNull(defaultClass, "default class is null");
         this.classes.add(defaultClass);
         return this;
     }
 
     @SafeVarargs
-    public final FeatureToggleBinder<T> allOf(@NotNull Class<? extends T>... classes)
+    public final FeatureToggleBinder<T> allOf(Class<? extends T>... classes)
     {
+        requireNonNull(classes, "classes are null");
         this.classes = new HashSet<>(Arrays.asList(classes));
         return this;
     }
@@ -112,15 +112,15 @@ public class FeatureToggleBinder<T>
         return this;
     }
 
-    public FeatureToggleBinder<T> toggleStrategy(@NotNull String strategy)
+    public FeatureToggleBinder<T> toggleStrategy(String strategy)
     {
-        this.strategy = strategy;
+        this.strategy = requireNonNull(strategy, "strategy is null");
         return this;
     }
 
-    public FeatureToggleBinder<T> toggleStrategyConfig(@NotNull Map<String, String> strategyConfigMap)
+    public FeatureToggleBinder<T> toggleStrategyConfig(Map<String, String> strategyConfigMap)
     {
-        this.strategyConfigMap = strategyConfigMap;
+        this.strategyConfigMap = requireNonNull(strategyConfigMap, "strategy config map is null");
         return this;
     }
 
@@ -129,7 +129,6 @@ public class FeatureToggleBinder<T>
         MapBinder<String, Object> featureInstanceMap = MapBinder.newMapBinder(binder, String.class, Object.class, FeatureToggles.named("feature-instance-map"));
         MapBinder<String, Feature<?>> featureMap = MapBinder.newMapBinder(binder, new TypeLiteral<String>() {}, new TypeLiteral<Feature<?>>() {}, FeatureToggles.named("feature-map"));
         classes.forEach(klass -> featureInstanceMap.addBinding(klass.getName()).to(klass));
-        Feature<T> feature = new Feature<>();
         FeatureToggleStrategyConfig featureToggleStrategyConfig = null;
         if (strategy != null) {
             featureToggleStrategyConfig = new FeatureToggleStrategyConfig(strategy, strategyConfigMap);
@@ -143,9 +142,7 @@ public class FeatureToggleBinder<T>
                 defaultClass == null ? null : defaultClass.getName(),
                 defaultClass == null ? null : defaultClass.getName(),
                 featureToggleStrategyConfig);
-        feature.setFeatureId(featureId);
-        feature.setBaseClass(baseClass);
-        feature.setConfiguration(configuration);
+        Feature<T> feature = new Feature<>(featureId, baseClass, configuration);
         featureMap.addBinding(featureId).toInstance(feature);
 
         // bind supplier for simple toggle check
@@ -157,7 +154,7 @@ public class FeatureToggleBinder<T>
         if (baseClass != null) {
             checkState(defaultClass != null, "Invalid Feature Toggle binding: base class without default class");
             // bind providers
-            if (classes != null && classes.size() > 0) {
+            if (classes != null && !classes.isEmpty()) {
                 binder.bind(baseClass).annotatedWith(FeatureToggles.named(featureId)).toProvider(() -> baseClass.cast(feature.getCurrentInstance(featureId)));
                 configuration.setHotReloadable(true);
             }

@@ -19,16 +19,15 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.facebook.airlift.configuration.ConfigurationLoader.loadPropertiesFrom;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.String.format;
 import static java.nio.file.Files.exists;
@@ -66,48 +65,46 @@ public class ConfigurationParser
         checkArgument(exists(path), "File does not exist: %s", path);
         checkArgument(isReadable(path), "File is not readable: %s", path);
         if (JSON.equalsIgnoreCase(config.getConfigType())) {
-            parseJson(path, featureConfigurationMap);
+            parseJsonConfiguration(path, featureConfigurationMap);
         }
         else if (PROPERTIES.equalsIgnoreCase(config.getConfigType())) {
-            parseProperties(path, featureConfigurationMap);
+            parsePropertiesConfiguration(path, featureConfigurationMap);
         }
         return featureConfigurationMap;
     }
 
-    private static void parseProperties(Path path, Map<String, FeatureConfiguration> featureConfigurationMap)
+    static void parsePropertiesConfiguration(Path path, Map<String, FeatureConfiguration> featureConfigurationMap)
     {
         try {
-            Properties properties = new Properties();
-            properties.load(Files.newInputStream(path));
-            Map<String, Map<String, String>> map = new TreeMap<>();
-            for (Object key : properties.keySet()) {
-                String propertyKey = (String) key;
-                List<String> keyList = Arrays.asList(propertyKey.split(REGEX_DOT));
-                if (!FEATURE.equals(keyList.get(0))) {
-                    continue;
+            Map<String, String> properties = loadPropertiesFrom(path.toString());
+            Map<String, Map<String, String>> featurePropertyMap = new TreeMap<>();
+            properties.forEach((key, value) -> {
+                List<String> keyList = Arrays.asList(key.split(REGEX_DOT));
+                if (FEATURE.equals(keyList.get(0))) {
+                    String featureId = keyList.get(1);
+                    if (!featurePropertyMap.containsKey(featureId)) {
+                        featurePropertyMap.put(featureId, new TreeMap<>());
+                    }
+                    String property = key.replace(format(FEATURE_S, featureId), EMPTY_STRING);
+                    featurePropertyMap.get(featureId).put(property, value);
                 }
-                String featureId = keyList.get(1);
-                if (!map.containsKey(featureId)) {
-                    map.put(featureId, new TreeMap<>());
-                }
-                String property = propertyKey.replace(format(FEATURE_S, featureId), EMPTY_STRING);
-                map.get(featureId).put(property, properties.getProperty(propertyKey));
-            }
-            map.keySet().forEach(featureId -> {
-                Map<String, String> featureMap = map.get(featureId);
-                featureConfigurationMap.put(featureId, new FeatureConfiguration(
-                        featureId,
-                        Boolean.parseBoolean(featureMap.getOrDefault(ENABLED, TRUE)),
-                        Boolean.parseBoolean(featureMap.getOrDefault(HOT_RELOADABLE, FALSE)),
-                        featureMap.get(FEATURE_CLASS),
-                        Arrays.asList(featureMap.getOrDefault(FEATURE_INSTANCES, EMPTY_STRING).split(COMMA)),
-                        featureMap.get(CURRENT_INSTANCE),
-                        featureMap.get(DEFAULT_INSTANCE),
-                        parseStrategy(featureMap)));
             });
+            featurePropertyMap.forEach((featureId, featureMap) -> featureConfigurationMap.put(featureId,
+                    new FeatureConfiguration(
+                            featureId,
+                            Boolean.parseBoolean(featureMap.getOrDefault(ENABLED, TRUE)),
+                            Boolean.parseBoolean(featureMap.getOrDefault(HOT_RELOADABLE, FALSE)),
+                            featureMap.get(FEATURE_CLASS),
+                            Arrays.asList(featureMap.getOrDefault(FEATURE_INSTANCES, EMPTY_STRING).split(COMMA)),
+                            featureMap.get(CURRENT_INSTANCE),
+                            featureMap.get(DEFAULT_INSTANCE),
+                            parseStrategy(featureMap))));
         }
         catch (IOException e) {
-            throw new IllegalArgumentException(format("Invalid Properties file '%s'", path), e);
+            throw new IllegalArgumentException(format("Error reading Properties file '%s'", path), e);
+        }
+        catch (IndexOutOfBoundsException e) {
+            throw new IllegalArgumentException(format("Invalid Properties file format '%s'", path), e);
         }
     }
 
@@ -124,7 +121,7 @@ public class ConfigurationParser
         return new FeatureToggleStrategyConfig(featureMap.get(STRATEGY), strategyMap);
     }
 
-    private static void parseJson(Path path, Map<String, FeatureConfiguration> featureConfigurationMap)
+    static void parseJsonConfiguration(Path path, Map<String, FeatureConfiguration> featureConfigurationMap)
     {
         try {
             ObjectMapper mapper = new JsonObjectMapperProvider().get()
