@@ -1,0 +1,10 @@
+ mvn license:format
+
+ ./check.bash
+
+./build.bash
+
+ mvn dependency:analyze
+
+ mvn modernizer:modernizer
+
