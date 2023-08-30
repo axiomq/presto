@@ -24,6 +24,8 @@ import com.google.inject.Inject;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static java.util.Objects.requireNonNull;
+
 public class PrestoFeatureToggle
 {
     private final Map<String, Feature<?>> featureMap;
@@ -38,10 +40,10 @@ public class PrestoFeatureToggle
             FeatureToggleStrategyFactory featureToggleStrategyFactory,
             FeatureToggleConfiguration featureToggleConfiguration)
     {
-        this.featureMap = featureMap;
-        this.featureInstanceMap = featureInstanceMap;
-        this.featureToggleStrategyFactory = featureToggleStrategyFactory;
-        this.featureToggleConfiguration = featureToggleConfiguration;
+        this.featureMap = requireNonNull(featureMap);
+        this.featureInstanceMap = requireNonNull(featureInstanceMap);
+        this.featureToggleStrategyFactory = requireNonNull(featureToggleStrategyFactory);
+        this.featureToggleConfiguration = requireNonNull(featureToggleConfiguration);
         this.featureMap.values().forEach(f -> f.setContext(this));
     }
 

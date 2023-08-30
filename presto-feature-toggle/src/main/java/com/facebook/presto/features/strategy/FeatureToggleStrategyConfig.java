@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 public class FeatureToggleStrategyConfig
 {
-    public static final String ACTIVE = "active";
+    private static final String ACTIVE = "active";
 
     private final Map<String, String> configurationMap;
     private final String strategyName;

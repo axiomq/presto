@@ -76,7 +76,7 @@ public class FeatureToggleStrategyTest
      * }</pre>
      * <p>
      * in first set of tests feature with id "BooleanStringStrategy" accepts "yes,no" values,
-     * if input param is yes strategy will evaluate this as true, in other casses will evaluate as false
+     * if input param is yes strategy will evaluate this as true, in other cases will evaluate as false
      * <pre>{@code
      *      isFunctionInjectionWithStrategyEnabled.apply("yes") will return true
      * }</pre>
@@ -89,7 +89,7 @@ public class FeatureToggleStrategyTest
      * <pre>{@code
      *    feature.FunctionInjectionWithStrategy.strategy.allow-values=yes,no
      * }</pre>
-     * after configuration change if input param is "true" strategy will evaluate this as true, in other casses will evaluate as false
+     * after configuration change if input param is "true" strategy will evaluate this as true, in other cases will evaluate as false
      * <pre>{@code
      *           isFunctionInjectionWithStrategyEnabled.apply("true") // will return true
      *           isFunctionInjectionWithStrategyEnabled.apply("yes") // will return false

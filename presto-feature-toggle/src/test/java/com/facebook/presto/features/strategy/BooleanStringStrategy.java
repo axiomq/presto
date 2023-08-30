@@ -68,6 +68,8 @@ public class BooleanStringStrategy
                 case TRUE_FALSE:
                     allow.set(Boolean.parseBoolean(stringBoolean));
                     break;
+                default:
+                    break;
             }
         });
         return allow.get();

@@ -26,7 +26,7 @@ public class FeatureToggleImpl
 
     public FeatureToggleImpl(String value)
     {
-        this.value = requireNonNull(value, "value");
+        this.value = requireNonNull(value, "value is null");
     }
 
     @Override

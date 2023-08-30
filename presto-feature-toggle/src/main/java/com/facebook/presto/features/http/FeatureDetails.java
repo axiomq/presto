@@ -15,13 +15,7 @@ package com.facebook.presto.features.http;
 
 import com.facebook.drift.annotations.ThriftField;
 import com.facebook.drift.annotations.ThriftStruct;
-import com.facebook.presto.features.binder.Feature;
-import com.facebook.presto.features.binder.PrestoFeatureToggle;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import static com.facebook.presto.features.http.FeatureInfo.getActiveFeatureInfo;
-import static com.facebook.presto.features.http.FeatureInfo.getInitialFeatureInfo;
-import static com.facebook.presto.features.http.FeatureInfo.getOverrideFeatureInfo;
 
 @ThriftStruct
 public class FeatureDetails
@@ -56,14 +50,5 @@ public class FeatureDetails
     public FeatureInfo getActiveConfiguration()
     {
         return activeConfiguration;
-    }
-
-    static FeatureDetails details(PrestoFeatureToggle prestoFeatureToggle, String featureId)
-    {
-        Feature<?> feature = prestoFeatureToggle.getFeatureMap().get(featureId);
-        FeatureInfo initialFeatureInfo = getInitialFeatureInfo(feature);
-        FeatureInfo overrideFeatureInfo = getOverrideFeatureInfo(feature, prestoFeatureToggle);
-        FeatureInfo activeFeatureInfo = getActiveFeatureInfo(feature, prestoFeatureToggle);
-        return new FeatureDetails(initialFeatureInfo, overrideFeatureInfo, activeFeatureInfo);
     }
 }

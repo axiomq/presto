@@ -13,6 +13,7 @@
  */
 package com.facebook.presto.features.http;
 
+import com.facebook.presto.features.binder.Feature;
 import com.facebook.presto.features.binder.PrestoFeatureToggle;
 import com.google.inject.Inject;
 
@@ -27,6 +28,10 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
+
+import static com.facebook.presto.features.http.FeatureInfo.getActiveFeatureInfo;
+import static com.facebook.presto.features.http.FeatureInfo.getInitialFeatureInfo;
+import static com.facebook.presto.features.http.FeatureInfo.getOverrideFeatureInfo;
 
 @Path("/v1/features")
 public class FeatureToggleInfo
@@ -244,7 +249,11 @@ public class FeatureToggleInfo
     public Response details(@PathParam("featureId") String featureId)
     {
         if (featureToggle.getFeatureMap().get(featureId) != null) {
-            return Response.ok().entity(FeatureDetails.details(featureToggle, featureId)).build();
+            Feature<?> feature = featureToggle.getFeatureMap().get(featureId);
+            FeatureInfo initialFeatureInfo = getInitialFeatureInfo(feature);
+            FeatureInfo overrideFeatureInfo = getOverrideFeatureInfo(feature, featureToggle);
+            FeatureInfo activeFeatureInfo = getActiveFeatureInfo(feature, featureToggle);
+            return Response.ok().entity(new FeatureDetails(initialFeatureInfo, overrideFeatureInfo, activeFeatureInfo)).build();
         }
         return Response.noContent().build();
     }

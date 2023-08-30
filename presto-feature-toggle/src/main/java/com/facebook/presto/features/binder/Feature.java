@@ -15,6 +15,8 @@ package com.facebook.presto.features.binder;
 
 import com.facebook.presto.features.config.FeatureConfiguration;
 
+import static java.util.Objects.requireNonNull;
+
 public class Feature<T>
 {
     private final String featureId;
@@ -24,9 +26,9 @@ public class Feature<T>
 
     public Feature(String featureId, Class<T> baseClass, FeatureConfiguration configuration)
     {
-        this.featureId = featureId;
+        this.featureId = requireNonNull(featureId, "feature ID is null");
         this.baseClass = baseClass;
-        this.configuration = configuration;
+        this.configuration = requireNonNull(configuration, "feature configuration is null");
     }
 
     public String getFeatureId()

@@ -756,22 +756,21 @@ public class ServerMainModule
                         .to(TempStorageSingleStreamSpillerFactory.class)
                         .in(Scopes.SINGLETON)));
 
-//        FeatureToggleConfig featureToggleConfig = buildConfigObject(FeatureToggleConfig.class);
-//        install(installModuleIf(
-//                FeatureToggleConfig.class,
-//                config -> "file".equalsIgnoreCase(config.getConfigSourceType()),
-//                new FileBasedFeatureToggleModule(featureToggleConfig)));
-
         install(installModuleIf(
                 FeatureToggleConfig.class,
                 featureToggleConfig -> "file".equalsIgnoreCase(featureToggleConfig.getConfigSourceType()),
-                new FileBasedFeatureSource()));
-        install(installModuleIf(
-                FeatureToggleConfig.class,
-                featureToggleConfig -> "database".equalsIgnoreCase(featureToggleConfig.getConfigSourceType()),
-                new DatabaseBasedFeatureSource()));
+                new FileBasedFeatureToggleModule()));
 
-        install(new FeatureToggleModule());
+//        install(installModuleIf(
+//                FeatureToggleConfig.class,
+//                featureToggleConfig -> "file".equalsIgnoreCase(featureToggleConfig.getConfigSourceType()),
+//                new FileBasedFeatureSource()));
+//        install(installModuleIf(
+//                FeatureToggleConfig.class,
+//                featureToggleConfig -> "database".equalsIgnoreCase(featureToggleConfig.getConfigSourceType()),
+//                new DatabaseBasedFeatureSource()));
+//
+//        install(new FeatureToggleModule());
 
         // Thrift RPC
         binder.install(new DriftNettyServerModule());

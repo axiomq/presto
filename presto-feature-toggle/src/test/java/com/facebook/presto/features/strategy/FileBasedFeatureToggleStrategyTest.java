@@ -33,7 +33,7 @@ import java.util.function.Function;
 
 import static com.facebook.presto.features.TestUtils.sleep;
 import static com.facebook.presto.features.binder.FeatureToggleBinder.featureToggleBinder;
-import static com.facebook.presto.features.binder.TestConfigurationParser.updateProperty;
+import static com.facebook.presto.features.config.TestConfigurationParser.updateProperty;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
@@ -60,8 +60,6 @@ public class FileBasedFeatureToggleStrategyTest
 {
     private static final String FEATURE_ID = "FunctionInjectionWithStrategy";
 
-    private FeatureToggleConfig config;
-
     @BeforeTest
     public void prepare()
     {
@@ -72,7 +70,7 @@ public class FileBasedFeatureToggleStrategyTest
             features.config-type=properties
             features.refresh-period=5s
          */
-        config = new FeatureToggleConfig();
+        FeatureToggleConfig config = new FeatureToggleConfig();
         config.setConfigSourceType("file");
         config.setConfigSource("feature-toggle.properties");
         config.setConfigType("properties");
