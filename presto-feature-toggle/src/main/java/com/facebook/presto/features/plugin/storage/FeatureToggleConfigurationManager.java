@@ -34,11 +34,9 @@ import static java.util.Objects.requireNonNull;
 
 public class FeatureToggleConfigurationManager
 {
-    private static final Logger log = Logger.get(FeatureToggleConfigurationManager.class);
-
-    private static final File FEATURE_TOGGLE_CONFIGURATION_DIR = new File("etc/feature-toggle/");
     public static final String FEATURE_TOGGLE_CONFIGURATION_FACTORY_NAME = "features.config-source-type";
-
+    private static final Logger log = Logger.get(FeatureToggleConfigurationManager.class);
+    private static final File FEATURE_TOGGLE_CONFIGURATION_DIR = new File("etc/feature-toggle/");
     private final Map<String, ConfigurationSourceFactory> configurationSourceFactories = new ConcurrentHashMap<>();
     private final Map<String, ConfigurationSource> loadedConfigurationSources = new ConcurrentHashMap<>();
     private final AtomicBoolean tempStorageLoading = new AtomicBoolean();
@@ -49,6 +47,17 @@ public class FeatureToggleConfigurationManager
 //        this.featureToggleConfig = featureToggleConfig;
 //        featureToggleConfig.getConfigType();
 //    }
+
+    private static List<File> listFiles(File dir)
+    {
+        if (dir != null && dir.isDirectory()) {
+            File[] files = dir.listFiles();
+            if (files != null) {
+                return ImmutableList.copyOf(files);
+            }
+        }
+        return ImmutableList.of();
+    }
 
     public void addConfigurationSourceFactory(ConfigurationSourceFactory configurationSourceFactory)
     {
@@ -116,16 +125,5 @@ public class FeatureToggleConfigurationManager
         }
 
         log.info("-- Loaded Configuration Source %s --", name);
-    }
-
-    private static List<File> listFiles(File dir)
-    {
-        if (dir != null && dir.isDirectory()) {
-            File[] files = dir.listFiles();
-            if (files != null) {
-                return ImmutableList.copyOf(files);
-            }
-        }
-        return ImmutableList.of();
     }
 }

@@ -138,7 +138,7 @@ public interface Plugin
         return emptyList();
     }
 
-    default Iterable<ConfigurationSourceFactory> getConnectorSources()
+    default Iterable<ConfigurationSourceFactory> getConfigurationSourceFactories()
     {
         return emptyList();
     }

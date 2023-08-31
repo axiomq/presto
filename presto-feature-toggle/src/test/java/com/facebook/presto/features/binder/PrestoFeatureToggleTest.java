@@ -13,12 +13,12 @@
  */
 package com.facebook.presto.features.binder;
 
-import com.facebook.presto.spi.features.FeatureConfiguration;
-import com.facebook.presto.spi.features.FeatureToggleConfiguration;
 import com.facebook.presto.features.config.FileBasedFeatureToggleConfiguration;
 import com.facebook.presto.features.strategy.BooleanStringStrategy;
-import com.facebook.presto.features.strategy.FeatureToggleStrategyConfig;
 import com.facebook.presto.features.strategy.FeatureToggleStrategyFactory;
+import com.facebook.presto.spi.features.FeatureConfiguration;
+import com.facebook.presto.spi.features.FeatureToggleConfiguration;
+import com.facebook.presto.spi.features.FeatureToggleStrategyConfig;
 import com.google.common.collect.ImmutableMap;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -31,18 +31,16 @@ import static org.testng.Assert.assertTrue;
 
 public class PrestoFeatureToggleTest
 {
+    private static final String simpleFeatureId = "simple-feature";
+    private static final String simpleFeatureWithStrategyToggleId = "simple-feature-with-strategy-toggle";
     /**
      * map is configuration provider for dynamic configuration parameters
      */
     private final Map<String, FeatureConfiguration> config = new HashMap<>();
-
-    private Map<String, Feature<?>> featureMap;
     private final Map<String, Object> featureInstanceMap = new HashMap<>();
     private final FeatureToggleStrategyFactory featureToggleStrategyFactory = new FeatureToggleStrategyFactory(ImmutableMap.of("BooleanString", new BooleanStringStrategy()));
+    private Map<String, Feature<?>> featureMap;
     private FeatureToggleConfiguration featureToggleConfiguration;
-
-    private static final String simpleFeatureId = "simple-feature";
-    private static final String simpleFeatureWithStrategyToggleId = "simple-feature-with-strategy-toggle";
 
     @BeforeMethod
     public void prepare()

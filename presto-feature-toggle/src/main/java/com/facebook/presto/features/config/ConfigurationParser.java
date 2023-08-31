@@ -14,8 +14,8 @@
 package com.facebook.presto.features.config;
 
 import com.facebook.airlift.json.JsonObjectMapperProvider;
-import com.facebook.presto.features.strategy.FeatureToggleStrategyConfig;
 import com.facebook.presto.spi.features.FeatureConfiguration;
+import com.facebook.presto.spi.features.FeatureToggleStrategyConfig;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

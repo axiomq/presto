@@ -17,6 +17,7 @@ import com.facebook.presto.features.annotations.FeatureToggle;
 import com.facebook.presto.features.binder.PrestoFeatureToggle;
 import com.facebook.presto.features.binder.TestFeatureToggleModule;
 import com.facebook.presto.spi.features.FeatureConfiguration;
+import com.facebook.presto.spi.features.FeatureToggleStrategyConfig;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Guice;
 import com.google.inject.Inject;

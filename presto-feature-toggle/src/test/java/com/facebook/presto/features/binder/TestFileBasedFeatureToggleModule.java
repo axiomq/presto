@@ -14,12 +14,12 @@
 package com.facebook.presto.features.binder;
 
 import com.facebook.presto.features.config.FeatureToggleConfig;
-import com.facebook.presto.spi.features.FeatureToggleConfiguration;
 import com.facebook.presto.features.config.FileBasedFeatureToggleConfiguration;
 import com.facebook.presto.features.config.ForwardingFeaturesConfiguration;
 import com.facebook.presto.features.strategy.AllowAllStrategy;
 import com.facebook.presto.features.strategy.FeatureToggleStrategy;
 import com.facebook.presto.features.strategy.OsToggleStrategy;
+import com.facebook.presto.spi.features.FeatureToggleConfiguration;
 import com.google.inject.Binder;
 import com.google.inject.Inject;
 import com.google.inject.Module;

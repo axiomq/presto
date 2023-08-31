@@ -14,6 +14,7 @@
 package com.facebook.presto.features.strategy;
 
 import com.facebook.presto.spi.features.FeatureConfiguration;
+import com.facebook.presto.spi.features.FeatureToggleStrategyConfig;
 import com.google.common.collect.ImmutableMap;
 import org.testng.annotations.Test;
 

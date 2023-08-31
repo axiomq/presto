@@ -20,9 +20,8 @@ import com.google.common.collect.ImmutableList;
 public final class FeatureTogglePlugin
         implements Plugin
 {
-    @Override
-    public Iterable<ConfigurationSourceFactory> getConnectorSources()
+    public Iterable<ConfigurationSourceFactory> getConfigurationSourceFactories()
     {
-        return ImmutableList.of(new FeatureToggleConfigurationSourceFactory());
+        return ImmutableList.of(new FeatureToggleFileConfigurationSource.Factory());
     }
 }
