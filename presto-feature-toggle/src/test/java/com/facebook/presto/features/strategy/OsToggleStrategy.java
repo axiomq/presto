@@ -13,7 +13,7 @@
  */
 package com.facebook.presto.features.strategy;
 
-import com.facebook.presto.features.config.FeatureConfiguration;
+import com.facebook.presto.spi.features.FeatureConfiguration;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;

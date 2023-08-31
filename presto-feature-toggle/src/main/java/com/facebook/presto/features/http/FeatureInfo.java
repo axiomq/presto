@@ -17,8 +17,8 @@ import com.facebook.drift.annotations.ThriftField;
 import com.facebook.drift.annotations.ThriftStruct;
 import com.facebook.presto.features.binder.Feature;
 import com.facebook.presto.features.binder.PrestoFeatureToggle;
-import com.facebook.presto.features.config.FeatureConfiguration;
-import com.facebook.presto.features.config.FeatureToggleConfiguration;
+import com.facebook.presto.spi.features.FeatureConfiguration;
+import com.facebook.presto.spi.features.FeatureToggleConfiguration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;

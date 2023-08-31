@@ -1,3 +1,4 @@
+
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -11,19 +12,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.facebook.presto.features.strategy;
+package com.facebook.presto.features.plugin.storage;
 
-import com.facebook.presto.spi.features.FeatureConfiguration;
+import com.google.inject.Binder;
+import com.google.inject.Module;
+import com.google.inject.Scopes;
 
-public interface FeatureToggleStrategy
+public class TempStorageModule
+        implements Module
 {
-    default boolean check(FeatureConfiguration featureConfiguration)
+    @Override
+    public void configure(Binder binder)
     {
-        return true;
-    }
-
-    default boolean check(FeatureConfiguration featureConfiguration, Object object)
-    {
-        return true;
+        binder.bind(FeatureToggleConfigurationManager.class).in(Scopes.SINGLETON);
     }
 }

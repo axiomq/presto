@@ -21,7 +21,7 @@ import com.facebook.presto.execution.QueryManager;
 import com.facebook.presto.execution.QueryState;
 import com.facebook.presto.features.annotations.FeatureToggle;
 import com.facebook.presto.features.binder.PrestoFeatureToggle;
-import com.facebook.presto.features.config.FeatureConfiguration;
+import com.facebook.presto.spi.features.FeatureConfiguration;
 import com.facebook.presto.server.BasicQueryInfo;
 import com.facebook.presto.server.BasicQueryStats;
 import com.facebook.presto.spi.QueryId;

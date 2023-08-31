@@ -13,6 +13,9 @@
  */
 package com.facebook.presto.features.config;
 
+import com.facebook.presto.spi.features.FeatureConfiguration;
+import com.facebook.presto.spi.features.FeatureToggleConfiguration;
+
 import java.util.Map;
 
 public class FileBasedFeatureToggleConfiguration

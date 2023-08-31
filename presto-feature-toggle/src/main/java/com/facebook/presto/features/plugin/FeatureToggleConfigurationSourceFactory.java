@@ -13,13 +13,10 @@
  */
 package com.facebook.presto.features.plugin;
 
-import com.google.common.util.concurrent.ListeningScheduledExecutorService;
+import com.facebook.presto.spi.features.ConfigurationSource;
+import com.facebook.presto.spi.features.ConfigurationSourceFactory;
 
 import java.util.Map;
-
-import static com.facebook.airlift.concurrent.Threads.daemonThreadsNamed;
-import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
-import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 
 public class FeatureToggleConfigurationSourceFactory
         implements ConfigurationSourceFactory
@@ -27,20 +24,12 @@ public class FeatureToggleConfigurationSourceFactory
     @Override
     public String getName()
     {
-        return "feature toggle";
+        return "file";
     }
 
     @Override
-    public ConfigrationSource create(String catalogName, Map<String, String> requiredConfig, ConnectorContext context)
+    public ConfigurationSource create(Map<String, String> config)
     {
-        ListeningScheduledExecutorService executorService = listeningDecorator(newSingleThreadScheduledExecutor(daemonThreadsNamed("blackhole")));
-        return new PrestoFileConfigurationSource(
-                new BlackHoleMetadata(),
-                new BlackHoleSplitManager(),
-                new BlackHolePageSourceProvider(executorService),
-                new BlackHolePageSinkProvider(executorService),
-                new BlackHoleNodePartitioningProvider(context.getNodeManager()),
-                context.getTypeManager(),
-                executorService);
+        return null;
     }
 }

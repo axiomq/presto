@@ -16,7 +16,7 @@ package com.facebook.presto.features.http;
 import com.facebook.drift.annotations.ThriftField;
 import com.facebook.drift.annotations.ThriftStruct;
 import com.facebook.presto.features.binder.Feature;
-import com.facebook.presto.features.config.FeatureToggleConfiguration;
+import com.facebook.presto.spi.features.FeatureToggleConfiguration;
 import com.facebook.presto.features.strategy.FeatureToggleStrategyConfig;
 import com.fasterxml.jackson.annotation.JsonProperty;
 

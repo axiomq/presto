@@ -13,7 +13,7 @@
  */
 package com.facebook.presto.features.binder;
 
-import com.facebook.presto.features.config.FeatureConfiguration;
+import com.facebook.presto.spi.features.FeatureConfiguration;
 
 import static java.util.Objects.requireNonNull;
 

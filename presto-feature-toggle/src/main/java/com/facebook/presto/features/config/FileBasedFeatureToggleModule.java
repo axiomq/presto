@@ -15,12 +15,14 @@ package com.facebook.presto.features.config;
 
 import com.facebook.presto.features.binder.PrestoFeatureToggle;
 import com.facebook.presto.features.http.FeatureToggleInfo;
+import com.facebook.presto.features.plugin.storage.FeatureToggleConfigurationManager;
 import com.facebook.presto.features.strategy.FeatureToggleStrategyFactory;
+import com.facebook.presto.spi.features.FeatureToggleConfiguration;
 import com.google.inject.Binder;
 import com.google.inject.Inject;
 import com.google.inject.Module;
 import com.google.inject.Provides;
-import com.google.inject.Singleton;
+import com.google.inject.Scopes;
 
 import static com.facebook.airlift.jaxrs.JaxrsBinder.jaxrsBinder;
 import static com.facebook.presto.features.config.ConfigurationParser.parseConfiguration;
@@ -35,16 +37,17 @@ public class FileBasedFeatureToggleModule
     {
         jaxrsBinder(binder).bind(FeatureToggleInfo.class);
         binder.bind(FeatureToggleStrategyFactory.class);
-        binder.bind(PrestoFeatureToggle.class).in(Singleton.class);
+        binder.bind(PrestoFeatureToggle.class).in(Scopes.SINGLETON);
+        binder.bind(FeatureToggleConfigurationManager.class).in(Scopes.SINGLETON);
     }
 
     @Inject
     @Provides
-    public FeatureToggleConfiguration getFeaturesConfiguration(FeatureToggleConfig config)
+    public FeatureToggleConfiguration getFeaturesConfiguration(FeatureToggleConfig config, FeatureToggleConfigurationManager configurationManager)
     {
         if (config.getRefreshPeriod() != null) {
             return ForwardingFeaturesConfiguration.of(memoizeWithExpiration(
-                    () -> new FileBasedFeatureToggleConfiguration(parseConfiguration(config)),
+                    () -> configurationManager.getConfigurationSource(config.getConfigType()).getConfiguration(),
                     config.getRefreshPeriod().toMillis(),
                     MILLISECONDS));
         }

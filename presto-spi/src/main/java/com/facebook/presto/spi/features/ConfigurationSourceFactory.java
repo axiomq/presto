@@ -11,11 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.facebook.presto.features.config;
+package com.facebook.presto.spi.features;
 
-public interface FeatureToggleConfiguration
+import java.util.Map;
+
+public interface ConfigurationSourceFactory
 {
-    FeatureConfiguration getFeatureConfiguration(String featureId);
+    String getName();
 
-    String getCurrentInstance(String featureId);
+    ConfigurationSource create(Map<String, String> config);
 }

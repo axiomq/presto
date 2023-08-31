@@ -15,7 +15,7 @@ package com.facebook.presto.features.strategy;
 
 import com.facebook.presto.SessionRepresentation;
 import com.facebook.presto.execution.QueryManager;
-import com.facebook.presto.features.config.FeatureConfiguration;
+import com.facebook.presto.spi.features.FeatureConfiguration;
 import com.facebook.presto.spi.QueryId;
 import com.google.inject.Inject;
 

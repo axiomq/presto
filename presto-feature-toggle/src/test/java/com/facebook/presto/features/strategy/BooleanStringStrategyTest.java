@@ -13,7 +13,7 @@
  */
 package com.facebook.presto.features.strategy;
 
-import com.facebook.presto.features.config.FeatureConfiguration;
+import com.facebook.presto.spi.features.FeatureConfiguration;
 import com.google.common.collect.ImmutableMap;
 import org.testng.annotations.Test;
 

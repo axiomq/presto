@@ -25,6 +25,7 @@ public class FeatureToggleConfig
     public static final String FEATURES_CONFIG_SOURCE_TYPE = "features.config-source-type";
     public static final String FEATURES_CONFIG_TYPE = "features.config-type";
     public static final String FEATURES_REFRESH_PERIOD = "features.refresh-period";
+//    public static final String FEATURE_CONFIGURATION_SOURCES_DIRECTORY = "features.configuration-directory";
 
     private String configSourceType;
     private String configSource;

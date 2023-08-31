@@ -13,10 +13,56 @@
  */
 package com.facebook.presto.features.plugin;
 
+import com.facebook.presto.features.config.FileBasedFeatureToggleConfiguration;
+import com.facebook.presto.spi.features.ConfigurationSource;
+import com.facebook.presto.spi.features.ConfigurationSourceFactory;
+import com.facebook.presto.spi.features.FeatureToggleConfiguration;
+
+import java.util.Map;
+
+import static com.facebook.presto.features.config.ConfigurationParser.parseConfiguration;
+import static com.google.common.base.Preconditions.checkState;
+
 public class FeatureToggleFileConfigurationSource
-        implements ConfigrationSource
+        implements ConfigurationSource
 {
-    public FeatureToggleFileConfigurationSource()
+    public static final String NAME = "file";
+    public static final String FEATURES_CONFIG_SOURCE = "features.config-source";
+    public static final String FEATURES_CONFIG_SOURCE_TYPE = "features.config-source-type";
+    public static final String FEATURES_REFRESH_PERIOD = "features.refresh-period";
+
+    private final String location;
+    private final String type;
+
+    public FeatureToggleFileConfigurationSource(String location, String type)
     {
+        this.location = location;
+        this.type = type;
+    }
+
+    @Override
+    public FeatureToggleConfiguration getConfiguration()
+    {
+        return new FileBasedFeatureToggleConfiguration(parseConfiguration(location, type));
+    }
+
+    public static class Factory
+            implements ConfigurationSourceFactory
+    {
+        @Override
+        public String getName()
+        {
+            return NAME;
+        }
+
+        @Override
+        public ConfigurationSource create(Map<String, String> config)
+        {
+            String location = config.get(FEATURES_CONFIG_SOURCE);
+            checkState(location != null, "Configuration source path configuration must contain the '%s' property", FEATURES_CONFIG_SOURCE);
+            String type = config.get(FEATURES_CONFIG_SOURCE_TYPE);
+            checkState(type != null, "Configuration type configuration must contain the '%s' property", FEATURES_CONFIG_SOURCE_TYPE);
+            return new FeatureToggleFileConfigurationSource(location, type);
+        }
     }
 }

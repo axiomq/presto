@@ -14,8 +14,8 @@
 package com.facebook.presto.features.binder;
 
 import com.facebook.presto.features.annotations.FeatureToggle;
-import com.facebook.presto.features.config.FeatureConfiguration;
-import com.facebook.presto.features.config.FeatureToggleConfiguration;
+import com.facebook.presto.spi.features.FeatureConfiguration;
+import com.facebook.presto.spi.features.FeatureToggleConfiguration;
 import com.facebook.presto.features.strategy.FeatureToggleStrategy;
 import com.facebook.presto.features.strategy.FeatureToggleStrategyConfig;
 import com.facebook.presto.features.strategy.FeatureToggleStrategyFactory;
