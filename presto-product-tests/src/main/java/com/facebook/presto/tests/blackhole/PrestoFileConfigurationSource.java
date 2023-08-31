@@ -24,7 +24,7 @@ import static io.prestodb.tempto.assertions.QueryAssert.assertThat;
 import static io.prestodb.tempto.query.QueryExecutor.query;
 import static java.lang.String.format;
 
-public class BlackHoleConnector
+public class PrestoFileConfigurationSource
 {
     @Test(groups = {BLACKHOLE_CONNECTOR})
     public void blackHoleConnector()
