@@ -740,6 +740,7 @@ public class ServerMainModule
         newExporter(binder).export(SpillerFactory.class).withGeneratedName();
         binder.bind(LocalSpillManager.class).in(Scopes.SINGLETON);
         configBinder(binder).bindConfig(NodeSpillConfig.class);
+        configBinder(binder).bindConfig(FeatureToggleConfig.class);
 
         install(installModuleIf(
                 FeaturesConfig.class,

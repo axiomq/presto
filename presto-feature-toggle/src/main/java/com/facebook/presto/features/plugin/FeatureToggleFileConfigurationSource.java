@@ -29,7 +29,6 @@ public class FeatureToggleFileConfigurationSource
     public static final String NAME = "file";
     public static final String FEATURES_CONFIG_SOURCE = "features.config-source";
     public static final String FEATURES_CONFIG_SOURCE_TYPE = "features.config-source-type";
-    public static final String FEATURES_REFRESH_PERIOD = "features.refresh-period";
 
     private final String location;
     private final String type;

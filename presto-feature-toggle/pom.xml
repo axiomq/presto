@@ -52,12 +52,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.facebook.drift</groupId>
-            <artifactId>drift-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
@@ -68,20 +62,13 @@
         </dependency>
 
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>io.airlift</groupId>
-            <artifactId>units</artifactId>
-            <scope>provided</scope>
+            <groupId>com.facebook.airlift</groupId>
+            <artifactId>configuration</artifactId>
         </dependency>
 
         <dependency>
             <groupId>com.facebook.airlift</groupId>
-            <artifactId>configuration</artifactId>
+            <artifactId>log</artifactId>
         </dependency>
 
         <!-- Presto SPI -->

@@ -25,11 +25,13 @@ public class FeatureToggleConfig
     public static final String FEATURES_CONFIG_SOURCE_TYPE = "features.config-source-type";
     public static final String FEATURES_CONFIG_TYPE = "features.config-type";
     public static final String FEATURES_REFRESH_PERIOD = "features.refresh-period";
-//    public static final String FEATURE_CONFIGURATION_SOURCES_DIRECTORY = "features.configuration-directory";
+    public static final String FEATURE_CONFIGURATION_SOURCES_DIRECTORY = "features.configuration-directory";
+    private static final String FEATURE_TOGGLE_CONFIGURATION_DIR = "etc/feature-toggle/";
 
     private String configSourceType;
     private String configSource;
     private String configType;
+    private String configDirectory;
     private Duration refreshPeriod;
 
     @NotNull
@@ -79,6 +81,23 @@ public class FeatureToggleConfig
     public FeatureToggleConfig setConfigSourceType(String configSourceType)
     {
         this.configSourceType = configSourceType;
+        return this;
+    }
+
+    public String getConfigDirectory()
+    {
+        if (configDirectory == null) {
+            return FEATURE_TOGGLE_CONFIGURATION_DIR;
+        }
+        else {
+            return configDirectory;
+        }
+    }
+
+    @Config(FEATURE_CONFIGURATION_SOURCES_DIRECTORY)
+    public FeatureToggleConfig setConfigDirectory(String configDirectory)
+    {
+        this.configDirectory = configDirectory;
         return this;
     }
 }

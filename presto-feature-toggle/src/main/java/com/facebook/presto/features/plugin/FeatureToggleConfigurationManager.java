@@ -11,13 +11,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.facebook.presto.features.plugin.storage;
+package com.facebook.presto.features.plugin;
 
 import com.facebook.airlift.log.Logger;
+import com.facebook.presto.features.config.FeatureToggleConfig;
 import com.facebook.presto.spi.features.ConfigurationSource;
 import com.facebook.presto.spi.features.ConfigurationSourceFactory;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.inject.Inject;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,13 +42,22 @@ public class FeatureToggleConfigurationManager
     private final Map<String, ConfigurationSourceFactory> configurationSourceFactories = new ConcurrentHashMap<>();
     private final Map<String, ConfigurationSource> loadedConfigurationSources = new ConcurrentHashMap<>();
     private final AtomicBoolean tempStorageLoading = new AtomicBoolean();
-//    private final FeatureToggleConfig featureToggleConfig;
+    private String configType;
+    private String configDir;
 
-//    public FeatureToggleConfigurationManager(FeatureToggleConfig featureToggleConfig)
-//    {
-//        this.featureToggleConfig = featureToggleConfig;
-//        featureToggleConfig.getConfigType();
-//    }
+    //
+    public FeatureToggleConfigurationManager()
+    {
+    }
+
+    //
+    @Inject
+    public FeatureToggleConfigurationManager(FeatureToggleConfig featureToggleConfig)
+    {
+        requireNonNull(featureToggleConfig, "Feature Toggle Config is null");
+        this.configType = requireNonNull(featureToggleConfig.getConfigType(), "Feature Toggle Config Type is null");
+        this.configDir = requireNonNull(featureToggleConfig.getConfigDirectory(), "Feature Toggle Config Directory is null");
+    }
 
     private static List<File> listFiles(File dir)
     {
@@ -78,6 +89,7 @@ public class FeatureToggleConfigurationManager
             throws IOException
     {
         ImmutableMap.Builder<String, Map<String, String>> configurationProperties = ImmutableMap.builder();
+        log.debug(format("Feature Toggle Config Directory = %s", configDir));
         for (File file : listFiles(FEATURE_TOGGLE_CONFIGURATION_DIR)) {
             if (file.isFile() && file.getName().endsWith(".properties")) {
                 String name = getNameWithoutExtension(file.getName());

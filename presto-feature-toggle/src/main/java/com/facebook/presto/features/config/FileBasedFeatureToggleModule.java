@@ -15,7 +15,7 @@ package com.facebook.presto.features.config;
 
 import com.facebook.presto.features.binder.PrestoFeatureToggle;
 import com.facebook.presto.features.http.FeatureToggleInfo;
-import com.facebook.presto.features.plugin.storage.FeatureToggleConfigurationManager;
+import com.facebook.presto.features.plugin.FeatureToggleConfigurationManager;
 import com.facebook.presto.features.strategy.FeatureToggleStrategyFactory;
 import com.facebook.presto.spi.features.FeatureToggleConfiguration;
 import com.google.inject.Binder;
