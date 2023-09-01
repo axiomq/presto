@@ -11,19 +11,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.facebook.presto.features.strategy;
+package com.facebook.presto.spi.features;
 
-import com.facebook.presto.spi.features.FeatureConfiguration;
-
-public interface FeatureToggleStrategy
+public interface FeatureToggleConfiguration
 {
-    default boolean check(FeatureConfiguration featureConfiguration)
-    {
-        return true;
-    }
+    FeatureConfiguration getFeatureConfiguration(String featureId);
 
-    default boolean check(FeatureConfiguration featureConfiguration, Object object)
-    {
-        return true;
-    }
+    String getCurrentInstance(String featureId);
 }

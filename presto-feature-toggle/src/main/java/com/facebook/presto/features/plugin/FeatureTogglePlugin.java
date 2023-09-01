@@ -11,19 +11,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.facebook.presto.features.strategy;
+package com.facebook.presto.features.plugin;
 
-import com.facebook.presto.spi.features.FeatureConfiguration;
+import com.facebook.presto.spi.Plugin;
+import com.facebook.presto.spi.features.ConfigurationSourceFactory;
+import com.google.common.collect.ImmutableList;
 
-public interface FeatureToggleStrategy
+public final class FeatureTogglePlugin
+        implements Plugin
 {
-    default boolean check(FeatureConfiguration featureConfiguration)
+    public Iterable<ConfigurationSourceFactory> getConfigurationSourceFactories()
     {
-        return true;
-    }
-
-    default boolean check(FeatureConfiguration featureConfiguration, Object object)
-    {
-        return true;
+        return ImmutableList.of(new FeatureToggleFileConfigurationSource.Factory());
     }
 }

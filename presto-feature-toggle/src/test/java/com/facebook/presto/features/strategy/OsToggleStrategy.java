@@ -13,7 +13,8 @@
  */
 package com.facebook.presto.features.strategy;
 
-import com.facebook.presto.features.config.FeatureConfiguration;
+import com.facebook.presto.spi.features.FeatureConfiguration;
+import com.facebook.presto.spi.features.FeatureToggleStrategyConfig;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -31,7 +32,7 @@ public class OsToggleStrategy
     @Override
     public boolean check(FeatureConfiguration configuration)
     {
-        Optional<com.facebook.presto.features.strategy.FeatureToggleStrategyConfig> featureToggleStrategyConfigOptional = configuration.getFeatureToggleStrategyConfig();
+        Optional<FeatureToggleStrategyConfig> featureToggleStrategyConfigOptional = configuration.getFeatureToggleStrategyConfig();
         if (!featureToggleStrategyConfigOptional.isPresent()) {
             return true;
         }

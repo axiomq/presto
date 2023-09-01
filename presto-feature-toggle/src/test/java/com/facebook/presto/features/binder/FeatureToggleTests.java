@@ -19,7 +19,7 @@ import com.facebook.presto.features.classes.HotReloadFeatureImpl01;
 import com.facebook.presto.features.classes.HotReloadFeatureImpl02;
 import com.facebook.presto.features.classes.ProviderFeature;
 import com.facebook.presto.features.classes.ProviderFeatureImpl;
-import com.facebook.presto.features.config.FeatureConfiguration;
+import com.facebook.presto.spi.features.FeatureConfiguration;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Guice;
 import com.google.inject.Inject;

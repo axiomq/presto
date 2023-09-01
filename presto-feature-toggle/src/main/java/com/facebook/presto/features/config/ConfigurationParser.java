@@ -14,7 +14,8 @@
 package com.facebook.presto.features.config;
 
 import com.facebook.airlift.json.JsonObjectMapperProvider;
-import com.facebook.presto.features.strategy.FeatureToggleStrategyConfig;
+import com.facebook.presto.spi.features.FeatureConfiguration;
+import com.facebook.presto.spi.features.FeatureToggleStrategyConfig;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -57,17 +58,24 @@ public class ConfigurationParser
 
     public static Map<String, FeatureConfiguration> parseConfiguration(FeatureToggleConfig config)
     {
+        String configSource = config.getConfigSource();
+        String configType = config.getConfigType();
+        return parseConfiguration(configSource, configType);
+    }
+
+    public static Map<String, FeatureConfiguration> parseConfiguration(String configSource, String configType)
+    {
         Map<String, FeatureConfiguration> featureConfigurationMap = new ConcurrentHashMap<>();
-        Path path = Paths.get(config.getConfigSource());
+        Path path = Paths.get(configSource);
         if (!path.isAbsolute()) {
             path = path.toAbsolutePath();
         }
         checkArgument(exists(path), "File does not exist: %s", path);
         checkArgument(isReadable(path), "File is not readable: %s", path);
-        if (JSON.equalsIgnoreCase(config.getConfigType())) {
+        if (JSON.equalsIgnoreCase(configType)) {
             parseJsonConfiguration(path, featureConfigurationMap);
         }
-        else if (PROPERTIES.equalsIgnoreCase(config.getConfigType())) {
+        else if (PROPERTIES.equalsIgnoreCase(configType)) {
             parsePropertiesConfiguration(path, featureConfigurationMap);
         }
         return featureConfigurationMap;

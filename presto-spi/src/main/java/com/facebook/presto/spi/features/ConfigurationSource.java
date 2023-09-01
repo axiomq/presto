@@ -11,11 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.facebook.presto.features.config;
+package com.facebook.presto.spi.features;
 
-public interface FeatureToggleConfiguration
+public interface ConfigurationSource
 {
-    FeatureConfiguration getFeatureConfiguration(String featureId);
-
-    String getCurrentInstance(String featureId);
+    FeatureToggleConfiguration getConfiguration();
 }

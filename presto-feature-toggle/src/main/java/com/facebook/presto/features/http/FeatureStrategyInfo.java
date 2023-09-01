@@ -16,8 +16,8 @@ package com.facebook.presto.features.http;
 import com.facebook.drift.annotations.ThriftField;
 import com.facebook.drift.annotations.ThriftStruct;
 import com.facebook.presto.features.binder.Feature;
-import com.facebook.presto.features.config.FeatureToggleConfiguration;
-import com.facebook.presto.features.strategy.FeatureToggleStrategyConfig;
+import com.facebook.presto.spi.features.FeatureToggleConfiguration;
+import com.facebook.presto.spi.features.FeatureToggleStrategyConfig;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.HashMap;
@@ -38,27 +38,6 @@ public class FeatureStrategyInfo
         this.active = active;
         this.strategyName = strategyName;
         this.config = config;
-    }
-
-    @JsonProperty
-    @ThriftField(1)
-    public boolean isActive()
-    {
-        return active;
-    }
-
-    @JsonProperty
-    @ThriftField(2)
-    public String getStrategyName()
-    {
-        return strategyName;
-    }
-
-    @JsonProperty
-    @ThriftField(3)
-    public Map<String, String> getConfig()
-    {
-        return config;
     }
 
     static FeatureStrategyInfo activeFeatureStrategyInfo(Feature<?> feature, FeatureToggleConfiguration configuration)
@@ -124,5 +103,26 @@ public class FeatureStrategyInfo
         else {
             return null;
         }
+    }
+
+    @JsonProperty
+    @ThriftField(1)
+    public boolean isActive()
+    {
+        return active;
+    }
+
+    @JsonProperty
+    @ThriftField(2)
+    public String getStrategyName()
+    {
+        return strategyName;
+    }
+
+    @JsonProperty
+    @ThriftField(3)
+    public Map<String, String> getConfig()
+    {
+        return config;
     }
 }

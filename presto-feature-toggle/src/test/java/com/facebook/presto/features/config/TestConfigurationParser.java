@@ -13,6 +13,8 @@
  */
 package com.facebook.presto.features.config;
 
+import com.facebook.presto.spi.features.FeatureConfiguration;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;

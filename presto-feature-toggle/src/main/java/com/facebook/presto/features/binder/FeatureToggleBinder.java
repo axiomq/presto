@@ -14,9 +14,9 @@
 package com.facebook.presto.features.binder;
 
 import com.facebook.presto.features.annotations.FeatureToggles;
-import com.facebook.presto.features.config.FeatureConfiguration;
 import com.facebook.presto.features.strategy.FeatureToggleStrategy;
-import com.facebook.presto.features.strategy.FeatureToggleStrategyConfig;
+import com.facebook.presto.spi.features.FeatureConfiguration;
+import com.facebook.presto.spi.features.FeatureToggleStrategyConfig;
 import com.google.inject.Binder;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;

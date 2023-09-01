@@ -17,8 +17,8 @@ import com.facebook.drift.annotations.ThriftField;
 import com.facebook.drift.annotations.ThriftStruct;
 import com.facebook.presto.features.binder.Feature;
 import com.facebook.presto.features.binder.PrestoFeatureToggle;
-import com.facebook.presto.features.config.FeatureConfiguration;
-import com.facebook.presto.features.config.FeatureToggleConfiguration;
+import com.facebook.presto.spi.features.FeatureConfiguration;
+import com.facebook.presto.spi.features.FeatureToggleConfiguration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
@@ -52,55 +52,6 @@ public class FeatureInfo
         this.currentInstance = currentInstance;
         this.defaultInstance = defaultInstance;
         this.strategy = strategy;
-    }
-
-    @JsonProperty
-    @ThriftField(1)
-    public String getFeatureId()
-    {
-        return featureId;
-    }
-
-    @JsonProperty
-    @ThriftField(1)
-    public boolean isEnabled()
-    {
-        return enabled;
-    }
-
-    @JsonProperty
-    @ThriftField(1)
-    public String getFeatureClass()
-    {
-        return featureClass;
-    }
-
-    @JsonProperty
-    @ThriftField(1)
-    public List<String> getFeatureInstances()
-    {
-        return featureInstances;
-    }
-
-    @JsonProperty
-    @ThriftField(1)
-    public String getCurrentInstance()
-    {
-        return currentInstance;
-    }
-
-    @JsonProperty
-    @ThriftField(1)
-    public String getDefaultInstance()
-    {
-        return defaultInstance;
-    }
-
-    @JsonProperty
-    @ThriftField(1)
-    public FeatureStrategyInfo getStrategy()
-    {
-        return strategy;
     }
 
     static List<FeatureInfo> featureInfos(PrestoFeatureToggle prestoFeatureToggle)
@@ -160,5 +111,54 @@ public class FeatureInfo
                 feature.getConfiguration().getDefaultInstance(),
                 feature.getConfiguration().getDefaultInstance(),
                 featureStrategyInfo);
+    }
+
+    @JsonProperty
+    @ThriftField(1)
+    public String getFeatureId()
+    {
+        return featureId;
+    }
+
+    @JsonProperty
+    @ThriftField(1)
+    public boolean isEnabled()
+    {
+        return enabled;
+    }
+
+    @JsonProperty
+    @ThriftField(1)
+    public String getFeatureClass()
+    {
+        return featureClass;
+    }
+
+    @JsonProperty
+    @ThriftField(1)
+    public List<String> getFeatureInstances()
+    {
+        return featureInstances;
+    }
+
+    @JsonProperty
+    @ThriftField(1)
+    public String getCurrentInstance()
+    {
+        return currentInstance;
+    }
+
+    @JsonProperty
+    @ThriftField(1)
+    public String getDefaultInstance()
+    {
+        return defaultInstance;
+    }
+
+    @JsonProperty
+    @ThriftField(1)
+    public FeatureStrategyInfo getStrategy()
+    {
+        return strategy;
     }
 }

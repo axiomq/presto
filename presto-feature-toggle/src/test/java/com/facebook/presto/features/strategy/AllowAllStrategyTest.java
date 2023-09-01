@@ -13,7 +13,7 @@
  */
 package com.facebook.presto.features.strategy;
 
-import com.facebook.presto.features.config.FeatureConfiguration;
+import com.facebook.presto.spi.features.FeatureConfiguration;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertTrue;
