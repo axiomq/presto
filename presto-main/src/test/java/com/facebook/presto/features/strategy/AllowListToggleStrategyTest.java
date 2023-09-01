@@ -65,6 +65,53 @@ public class AllowListToggleStrategyTest
     private static final String ALLOW_LIST_TOGGLE_STRATEGY = "AllowListToggleStrategy";
     private final Map<String, FeatureConfiguration> map = new HashMap<>();
 
+    /**
+     * Simple class to demonstrate FeatureToggle injection of function that accepts QueryId as parameter and evaluates condition using Feature Toggle evaluation strategy
+     */
+    private static class FunctionInjectionWithAllowListStrategyRunner
+    {
+        private final Function<Object, Boolean> isFunctionInjectionWithStrategyEnabled;
+        private final Provider<String> query;
+
+        @Inject
+        public FunctionInjectionWithAllowListStrategyRunner(
+                @FeatureToggle(FUNCTION_INJECTION_WITH_STRATEGY_FEATURE_ID) Function<Object, Boolean> isFunctionInjectionWithStrategyEnabled,
+                @Named(QUERY) Provider<String> query)
+        {
+            this.isFunctionInjectionWithStrategyEnabled = isFunctionInjectionWithStrategyEnabled;
+            this.query = query;
+        }
+
+        public boolean testFunctionInjectionWithStrategyEnabled()
+        {
+            return isFunctionInjectionWithStrategyEnabled.apply(QueryId.valueOf(query.get()));
+        }
+    }
+
+    /**
+     * Stub for QueryManager
+     * <p>
+     * Overrides method getQueryInfo to extract user and source from QueryId.
+     * QueryId id string is built from user and source separated by "___".
+     * Method builds BasicQueryInfo with extracted query user and query source
+     */
+    private static class StubQueryManager
+            extends NoOpQueryManager
+    {
+        @Override
+        public BasicQueryInfo getQueryInfo(QueryId queryId)
+                throws NoSuchElementException
+        {
+            String id = queryId.getId();
+            String[] splits = id.split(QUERY_USER_SOURCE_SEPARATOR);
+            String user = splits[0];
+            String source = splits[1];
+            SessionRepresentation stubSessionRepresentation = new SessionRepresentation(queryId.toString(), Optional.of(TransactionId.create()), false, user, Optional.of(user), Optional.of(source), Optional.of("null"), Optional.of("null"), Optional.of("null"), TimeZoneKey.UTC_KEY, Locale.US, Optional.of("null"), Optional.of("null"), Optional.of("null"), new HashSet<>(), new ResourceEstimates(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()), 0L, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>());
+            BasicQueryStats basicQueryStats = new BasicQueryStats(DateTime.now(), DateTime.now(), Duration.valueOf("1s"), Duration.valueOf("1s"), Duration.valueOf("1s"), Duration.valueOf("1s"), 0, 0, 0, 0, 0, 0, new DataSize(1.0, DataSize.Unit.BYTE), 0L, 0.0, 0.0, new DataSize(1.0, DataSize.Unit.BYTE), new DataSize(1.0, DataSize.Unit.BYTE), new DataSize(1.0, DataSize.Unit.BYTE), new DataSize(1.0, DataSize.Unit.BYTE), new DataSize(1.0, DataSize.Unit.BYTE), new DataSize(1.0, DataSize.Unit.BYTE), Duration.valueOf("1s"), Duration.valueOf("1s"), false, new HashSet<>(), new DataSize(1.0, DataSize.Unit.BYTE), OptionalDouble.empty());
+            return new BasicQueryInfo(queryId, stubSessionRepresentation, Optional.empty(), QueryState.RUNNING, null, false, URI.create(""), "SELECT * FROM TABLE", basicQueryStats, null, null, null, Optional.empty(), new ArrayList<>(), Optional.empty());
+        }
+    }
+
     @Test
     public void testAllowListStrategy()
     {
@@ -128,52 +175,5 @@ public class AllowListToggleStrategyTest
         queryReference.set("not___sure");
         enabled = runner.testFunctionInjectionWithStrategyEnabled();
         assertFalse(enabled);
-    }
-
-    /**
-     * Simple class to demonstrate FeatureToggle injection of function that accepts QueryId as parameter and evaluates condition using Feature Toggle evaluation strategy
-     */
-    private static class FunctionInjectionWithAllowListStrategyRunner
-    {
-        private final Function<Object, Boolean> isFunctionInjectionWithStrategyEnabled;
-        private final Provider<String> query;
-
-        @Inject
-        public FunctionInjectionWithAllowListStrategyRunner(
-                @FeatureToggle(FUNCTION_INJECTION_WITH_STRATEGY_FEATURE_ID) Function<Object, Boolean> isFunctionInjectionWithStrategyEnabled,
-                @Named(QUERY) Provider<String> query)
-        {
-            this.isFunctionInjectionWithStrategyEnabled = isFunctionInjectionWithStrategyEnabled;
-            this.query = query;
-        }
-
-        public boolean testFunctionInjectionWithStrategyEnabled()
-        {
-            return isFunctionInjectionWithStrategyEnabled.apply(QueryId.valueOf(query.get()));
-        }
-    }
-
-    /**
-     * Stub for QueryManager
-     * <p>
-     * Overrides method getQueryInfo to extract user and source from QueryId.
-     * QueryId id string is built from user and source separated by "___".
-     * Method builds BasicQueryInfo with extracted query user and query source
-     */
-    private static class StubQueryManager
-            extends NoOpQueryManager
-    {
-        @Override
-        public BasicQueryInfo getQueryInfo(QueryId queryId)
-                throws NoSuchElementException
-        {
-            String id = queryId.getId();
-            String[] splits = id.split(QUERY_USER_SOURCE_SEPARATOR);
-            String user = splits[0];
-            String source = splits[1];
-            SessionRepresentation stubSessionRepresentation = new SessionRepresentation(queryId.toString(), Optional.of(TransactionId.create()), false, user, Optional.of(user), Optional.of(source), Optional.of("null"), Optional.of("null"), Optional.of("null"), TimeZoneKey.UTC_KEY, Locale.US, Optional.of("null"), Optional.of("null"), Optional.of("null"), new HashSet<>(), new ResourceEstimates(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()), 0L, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>());
-            BasicQueryStats basicQueryStats = new BasicQueryStats(DateTime.now(), DateTime.now(), Duration.valueOf("1s"), Duration.valueOf("1s"), Duration.valueOf("1s"), Duration.valueOf("1s"), 0, 0, 0, 0, 0, 0, new DataSize(1.0, DataSize.Unit.BYTE), 0L, 0.0, 0.0, new DataSize(1.0, DataSize.Unit.BYTE), new DataSize(1.0, DataSize.Unit.BYTE), new DataSize(1.0, DataSize.Unit.BYTE), new DataSize(1.0, DataSize.Unit.BYTE), new DataSize(1.0, DataSize.Unit.BYTE), new DataSize(1.0, DataSize.Unit.BYTE), Duration.valueOf("1s"), Duration.valueOf("1s"), false, new HashSet<>(), new DataSize(1.0, DataSize.Unit.BYTE), OptionalDouble.empty());
-            return new BasicQueryInfo(queryId, stubSessionRepresentation, Optional.empty(), QueryState.RUNNING, null, false, URI.create(""), "SELECT * FROM TABLE", basicQueryStats, null, null, null, Optional.empty(), new ArrayList<>(), Optional.empty());
-        }
     }
 }

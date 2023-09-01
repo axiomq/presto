@@ -29,7 +29,7 @@ import static com.facebook.presto.features.config.ConfigurationParser.parseConfi
 import static com.google.common.base.Suppliers.memoizeWithExpiration;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
-public class FileBasedFeatureToggleModule
+public class FeatureToggleModule
         implements Module
 {
     @Override
@@ -51,6 +51,6 @@ public class FileBasedFeatureToggleModule
                     config.getRefreshPeriod().toMillis(),
                     MILLISECONDS));
         }
-        return new FileBasedFeatureToggleConfiguration(parseConfiguration(config));
+        return new DefaultFeatureToggleConfiguration(parseConfiguration(config));
     }
 }

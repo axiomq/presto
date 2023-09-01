@@ -18,12 +18,12 @@ import com.facebook.presto.spi.features.FeatureToggleConfiguration;
 
 import java.util.Map;
 
-public class FileBasedFeatureToggleConfiguration
+public class DefaultFeatureToggleConfiguration
         implements FeatureToggleConfiguration
 {
     private final Map<String, FeatureConfiguration> featureConfigurationMap;
 
-    public FileBasedFeatureToggleConfiguration(Map<String, FeatureConfiguration> featureConfigurationMap)
+    public DefaultFeatureToggleConfiguration(Map<String, FeatureConfiguration> featureConfigurationMap)
     {
         this.featureConfigurationMap = featureConfigurationMap;
     }
