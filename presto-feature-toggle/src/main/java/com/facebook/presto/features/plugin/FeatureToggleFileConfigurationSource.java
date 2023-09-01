@@ -13,7 +13,7 @@
  */
 package com.facebook.presto.features.plugin;
 
-import com.facebook.presto.features.config.FileBasedFeatureToggleConfiguration;
+import com.facebook.presto.features.config.DefaultFeatureToggleConfiguration;
 import com.facebook.presto.spi.features.ConfigurationSource;
 import com.facebook.presto.spi.features.ConfigurationSourceFactory;
 import com.facebook.presto.spi.features.FeatureToggleConfiguration;
@@ -42,8 +42,8 @@ public class FeatureToggleFileConfigurationSource
     @Override
     public FeatureToggleConfiguration getConfiguration()
     {
-        FileBasedFeatureToggleConfiguration fileBasedFeatureToggleConfiguration = new FileBasedFeatureToggleConfiguration(parseConfiguration(location, type));
-        return fileBasedFeatureToggleConfiguration;
+        DefaultFeatureToggleConfiguration defaultFeatureToggleConfiguration = new DefaultFeatureToggleConfiguration(parseConfiguration(location, type));
+        return defaultFeatureToggleConfiguration;
     }
 
     public static class Factory

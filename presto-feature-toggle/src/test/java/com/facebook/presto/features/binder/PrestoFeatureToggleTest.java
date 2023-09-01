@@ -13,7 +13,7 @@
  */
 package com.facebook.presto.features.binder;
 
-import com.facebook.presto.features.config.FileBasedFeatureToggleConfiguration;
+import com.facebook.presto.features.config.DefaultFeatureToggleConfiguration;
 import com.facebook.presto.features.strategy.BooleanStringStrategy;
 import com.facebook.presto.features.strategy.FeatureToggleStrategyFactory;
 import com.facebook.presto.spi.features.FeatureConfiguration;
@@ -62,7 +62,7 @@ public class PrestoFeatureToggleTest
         Feature<String> simpleFeatureWithStrategyToggle = new Feature<>(simpleFeatureWithStrategyToggleId, null, simpleFeatureWithStrategyToggleConfiguration);
         featureMap.put(simpleFeatureWithStrategyToggleId, simpleFeatureWithStrategyToggle);
 
-        featureToggleConfiguration = new FileBasedFeatureToggleConfiguration(config);
+        featureToggleConfiguration = new DefaultFeatureToggleConfiguration(config);
     }
 
     @Test

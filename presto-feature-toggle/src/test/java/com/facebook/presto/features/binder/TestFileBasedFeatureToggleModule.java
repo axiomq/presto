@@ -14,7 +14,7 @@
 package com.facebook.presto.features.binder;
 
 import com.facebook.presto.features.config.FeatureToggleConfig;
-import com.facebook.presto.features.config.FileBasedFeatureToggleConfiguration;
+import com.facebook.presto.features.config.DefaultFeatureToggleConfiguration;
 import com.facebook.presto.features.config.ForwardingFeaturesConfiguration;
 import com.facebook.presto.features.strategy.AllowAllStrategy;
 import com.facebook.presto.features.strategy.FeatureToggleStrategy;
@@ -54,10 +54,10 @@ public class TestFileBasedFeatureToggleModule
     {
         if (config.getRefreshPeriod() != null) {
             return ForwardingFeaturesConfiguration.of(memoizeWithExpiration(
-                    () -> new FileBasedFeatureToggleConfiguration(parseConfiguration(config)),
+                    () -> new DefaultFeatureToggleConfiguration(parseConfiguration(config)),
                     config.getRefreshPeriod().toMillis(),
                     MILLISECONDS));
         }
-        return new FileBasedFeatureToggleConfiguration(parseConfiguration(config));
+        return new DefaultFeatureToggleConfiguration(parseConfiguration(config));
     }
 }

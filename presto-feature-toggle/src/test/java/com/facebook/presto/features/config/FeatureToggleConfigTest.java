@@ -27,6 +27,7 @@ import static com.facebook.presto.features.config.FeatureToggleConfig.FEATURES_C
 import static com.facebook.presto.features.config.FeatureToggleConfig.FEATURES_CONFIG_SOURCE_TYPE;
 import static com.facebook.presto.features.config.FeatureToggleConfig.FEATURES_CONFIG_TYPE;
 import static com.facebook.presto.features.config.FeatureToggleConfig.FEATURES_REFRESH_PERIOD;
+import static com.facebook.presto.features.config.FeatureToggleConfig.FEATURE_CONFIGURATION_SOURCES_DIRECTORY;
 
 public class FeatureToggleConfigTest
 {
@@ -37,7 +38,8 @@ public class FeatureToggleConfigTest
                 .setConfigSource(null)
                 .setConfigSourceType(null)
                 .setConfigType(null)
-                .setRefreshPeriod(null));
+                .setRefreshPeriod(null)
+                .setConfigDirectory(null));
     }
 
     @Test
@@ -48,13 +50,15 @@ public class FeatureToggleConfigTest
                 .put(FEATURES_REFRESH_PERIOD, "1s")
                 .put(FEATURES_CONFIG_TYPE, "json")
                 .put(FEATURES_CONFIG_SOURCE_TYPE, "file")
+                .put(FEATURE_CONFIGURATION_SOURCES_DIRECTORY, "etc/feature-toggle/")
                 .build();
 
         FeatureToggleConfig expected = new FeatureToggleConfig()
                 .setConfigSource("/test.json")
                 .setRefreshPeriod(new Duration(1, TimeUnit.SECONDS))
                 .setConfigSourceType("file")
-                .setConfigType("json");
+                .setConfigType("json")
+                .setConfigDirectory("etc/feature-toggle/");
 
         assertFullMapping(properties, expected);
     }
