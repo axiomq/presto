@@ -36,13 +36,12 @@ import static java.util.Objects.requireNonNull;
 
 public class FeatureToggleConfigurationManager
 {
-    public static final String FEATURE_TOGGLE_CONFIGURATION_FACTORY_NAME = "features.config-source-type";
     private static final Logger log = Logger.get(FeatureToggleConfigurationManager.class);
+    public static final String FEATURE_TOGGLE_CONFIGURATION_FACTORY_NAME = "features.config-source-type";
     private static final File FEATURE_TOGGLE_CONFIGURATION_DIR = new File("etc/feature-toggle/");
     private final Map<String, ConfigurationSourceFactory> configurationSourceFactories = new ConcurrentHashMap<>();
     private final Map<String, ConfigurationSource> loadedConfigurationSources = new ConcurrentHashMap<>();
-    private final AtomicBoolean tempStorageLoading = new AtomicBoolean();
-    private String configType;
+    private final AtomicBoolean configurationLoading = new AtomicBoolean();
     private String configDir;
 
     //
@@ -55,7 +54,6 @@ public class FeatureToggleConfigurationManager
     public FeatureToggleConfigurationManager(FeatureToggleConfig featureToggleConfig)
     {
         requireNonNull(featureToggleConfig, "Feature Toggle Config is null");
-        this.configType = requireNonNull(featureToggleConfig.getConfigType(), "Feature Toggle Config Type is null");
         this.configDir = requireNonNull(featureToggleConfig.getConfigDirectory(), "Feature Toggle Config Directory is null");
     }
 
@@ -89,8 +87,15 @@ public class FeatureToggleConfigurationManager
             throws IOException
     {
         ImmutableMap.Builder<String, Map<String, String>> configurationProperties = ImmutableMap.builder();
-        log.debug(format("Feature Toggle Config Directory = %s", configDir));
-        for (File file : listFiles(FEATURE_TOGGLE_CONFIGURATION_DIR)) {
+        File configDirectory;
+        if (configDir == null) {
+            configDirectory = FEATURE_TOGGLE_CONFIGURATION_DIR;
+        }
+        else {
+            configDirectory = new File(configDir);
+        }
+
+        for (File file : listFiles(configDirectory)) {
             if (file.isFile() && file.getName().endsWith(".properties")) {
                 String name = getNameWithoutExtension(file.getName());
                 Map<String, String> properties = loadPropertiesFrom(file.getPath());
@@ -100,13 +105,13 @@ public class FeatureToggleConfigurationManager
         loadConfigurationSources(configurationProperties.build());
     }
 
-    public void loadConfigurationSources(Map<String, Map<String, String>> storageProperties)
+    public void loadConfigurationSources(Map<String, Map<String, String>> configurationProperties)
             throws IOException
     {
-        if (!tempStorageLoading.compareAndSet(false, true)) {
+        if (!configurationLoading.compareAndSet(false, true)) {
             return;
         }
-        storageProperties.forEach(this::loadConfigurationSource);
+        configurationProperties.forEach(this::loadConfigurationSource);
     }
 
     protected void loadConfigurationSource(String name, Map<String, String> properties)
@@ -126,7 +131,7 @@ public class FeatureToggleConfigurationManager
                 configurationSourceProperties.put(entry.getKey(), entry.getValue());
             }
         }
-        checkState(configurationSourceFactoryName != null, "Configuration for Configuration source %s does not contain feature.configuration.name", name);
+        checkState(configurationSourceFactoryName != null, "Configuration for Configuration source %s does not contain features.config-source-type", name);
 
         ConfigurationSourceFactory factory = configurationSourceFactories.get(configurationSourceFactoryName);
         checkState(factory != null, "Configuration Source Factory %s is not registered", configurationSourceFactoryName);

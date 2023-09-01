@@ -28,7 +28,7 @@ public class FeatureToggleFileConfigurationSource
 {
     public static final String NAME = "file";
     public static final String FEATURES_CONFIG_SOURCE = "features.config-source";
-    public static final String FEATURES_CONFIG_SOURCE_TYPE = "features.config-source-type";
+    public static final String FEATURES_CONFIG_SOURCE_TYPE = "features.config-type";
 
     private final String location;
     private final String type;
@@ -42,7 +42,8 @@ public class FeatureToggleFileConfigurationSource
     @Override
     public FeatureToggleConfiguration getConfiguration()
     {
-        return new FileBasedFeatureToggleConfiguration(parseConfiguration(location, type));
+        FileBasedFeatureToggleConfiguration fileBasedFeatureToggleConfiguration = new FileBasedFeatureToggleConfiguration(parseConfiguration(location, type));
+        return fileBasedFeatureToggleConfiguration;
     }
 
     public static class Factory

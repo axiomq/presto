@@ -47,7 +47,7 @@ public class FileBasedFeatureToggleModule
     {
         if (config.getRefreshPeriod() != null) {
             return ForwardingFeaturesConfiguration.of(memoizeWithExpiration(
-                    () -> configurationManager.getConfigurationSource(config.getConfigType()).getConfiguration(),
+                    () -> configurationManager.getConfigurationSource(config.getConfigSourceType()).getConfiguration(),
                     config.getRefreshPeriod().toMillis(),
                     MILLISECONDS));
         }
