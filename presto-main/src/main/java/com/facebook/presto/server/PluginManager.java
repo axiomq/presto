@@ -24,7 +24,7 @@ import com.facebook.presto.cost.HistoryBasedPlanStatisticsManager;
 import com.facebook.presto.dispatcher.QueryPrerequisitesManager;
 import com.facebook.presto.eventlistener.EventListenerManager;
 import com.facebook.presto.execution.resourceGroups.ResourceGroupManager;
-import com.facebook.presto.features.plugin.FeatureToggleConfigurationManager;
+import com.facebook.presto.features.config.FeatureToggleConfigurationManager;
 import com.facebook.presto.metadata.Metadata;
 import com.facebook.presto.security.AccessControlManager;
 import com.facebook.presto.server.security.PasswordAuthenticatorManager;

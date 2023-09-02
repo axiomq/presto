@@ -14,7 +14,6 @@
 package com.facebook.presto.features.strategy;
 
 import com.facebook.presto.features.binder.PrestoFeatureToggle;
-import com.facebook.presto.features.config.DefaultFeatureToggleConfiguration;
 import com.facebook.presto.features.config.ForwardingFeaturesConfiguration;
 import com.facebook.presto.spi.features.FeatureConfiguration;
 import com.facebook.presto.spi.features.FeatureToggleConfiguration;
@@ -57,7 +56,7 @@ public class TestFeatureToggleModule
     public FeatureToggleConfiguration getFeaturesConfiguration(Map<String, FeatureConfiguration> config)
     {
         return ForwardingFeaturesConfiguration.of(memoizeWithExpiration(
-                () -> new DefaultFeatureToggleConfiguration(config),
+                () -> new TestFeatureToggleConfiguration(config),
                 5000L,
                 MILLISECONDS));
     }

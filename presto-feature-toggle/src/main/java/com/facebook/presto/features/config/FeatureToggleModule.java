@@ -15,7 +15,6 @@ package com.facebook.presto.features.config;
 
 import com.facebook.presto.features.binder.PrestoFeatureToggle;
 import com.facebook.presto.features.http.FeatureToggleInfo;
-import com.facebook.presto.features.plugin.FeatureToggleConfigurationManager;
 import com.facebook.presto.features.strategy.FeatureToggleStrategyFactory;
 import com.facebook.presto.spi.features.FeatureToggleConfiguration;
 import com.google.inject.Binder;
@@ -25,7 +24,6 @@ import com.google.inject.Provides;
 import com.google.inject.Scopes;
 
 import static com.facebook.airlift.jaxrs.JaxrsBinder.jaxrsBinder;
-import static com.facebook.presto.features.config.ConfigurationParser.parseConfiguration;
 import static com.google.common.base.Suppliers.memoizeWithExpiration;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -45,12 +43,20 @@ public class FeatureToggleModule
     @Provides
     public FeatureToggleConfiguration getFeaturesConfiguration(FeatureToggleConfig config, FeatureToggleConfigurationManager configurationManager)
     {
+        String configSourceType;
+        if (config.getConfigSourceType() == null) {
+           configSourceType = DefaultConfigurationSource.NAME;
+        }
+        else {
+            configSourceType = config.getConfigSourceType();
+        }
+
         if (config.getRefreshPeriod() != null) {
             return ForwardingFeaturesConfiguration.of(memoizeWithExpiration(
-                    () -> configurationManager.getConfigurationSource(config.getConfigSourceType()).getConfiguration(),
+                    () -> configurationManager.getConfigurationSource(configSourceType).getConfiguration(),
                     config.getRefreshPeriod().toMillis(),
                     MILLISECONDS));
         }
-        return new DefaultFeatureToggleConfiguration(parseConfiguration(config));
+        return configurationManager.getConfigurationSource(configSourceType).getConfiguration();
     }
 }

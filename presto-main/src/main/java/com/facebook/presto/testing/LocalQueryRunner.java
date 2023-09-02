@@ -87,7 +87,6 @@ import com.facebook.presto.execution.scheduler.nodeSelection.NodeSelectionStats;
 import com.facebook.presto.execution.scheduler.nodeSelection.SimpleTtlNodeSelectorConfig;
 import com.facebook.presto.execution.warnings.DefaultWarningCollector;
 import com.facebook.presto.execution.warnings.WarningCollectorConfig;
-import com.facebook.presto.features.plugin.FeatureToggleConfigurationManager;
 import com.facebook.presto.index.IndexManager;
 import com.facebook.presto.memory.MemoryManagerConfig;
 import com.facebook.presto.memory.NodeMemoryConfig;
@@ -508,7 +507,7 @@ public class LocalQueryRunner
                 historyBasedPlanStatisticsManager,
                 new TracerProviderManager(new TracingConfig()),
                 new NodeStatusNotificationManager(),
-                new FeatureToggleConfigurationManager());
+                new TestingFeatureToggleConfigurationManager());
 
         connectorManager.addConnectorFactory(globalSystemConnectorFactory);
         connectorManager.createConnection(GlobalSystemConnector.NAME, GlobalSystemConnector.NAME, ImmutableMap.of());

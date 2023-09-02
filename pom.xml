@@ -190,6 +190,7 @@
         <module>presto-open-telemetry</module>
         <module>redis-hbo-provider</module>
         <module>presto-feature-toggle</module>
+        <module>presto-feature-toggle-plugin</module>
     </modules>
 
     <dependencyManagement>

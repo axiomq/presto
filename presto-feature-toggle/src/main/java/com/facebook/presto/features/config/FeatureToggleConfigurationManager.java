@@ -11,10 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.facebook.presto.features.plugin;
+package com.facebook.presto.features.config;
 
 import com.facebook.airlift.log.Logger;
-import com.facebook.presto.features.config.FeatureToggleConfig;
 import com.facebook.presto.spi.features.ConfigurationSource;
 import com.facebook.presto.spi.features.ConfigurationSourceFactory;
 import com.google.common.collect.ImmutableList;
@@ -42,19 +41,14 @@ public class FeatureToggleConfigurationManager
     private final Map<String, ConfigurationSourceFactory> configurationSourceFactories = new ConcurrentHashMap<>();
     private final Map<String, ConfigurationSource> loadedConfigurationSources = new ConcurrentHashMap<>();
     private final AtomicBoolean configurationLoading = new AtomicBoolean();
-    private String configDir;
+    private final String configDir;
 
-    //
-    public FeatureToggleConfigurationManager()
-    {
-    }
-
-    //
     @Inject
     public FeatureToggleConfigurationManager(FeatureToggleConfig featureToggleConfig)
     {
         requireNonNull(featureToggleConfig, "Feature Toggle Config is null");
-        this.configDir = requireNonNull(featureToggleConfig.getConfigDirectory(), "Feature Toggle Config Directory is null");
+        this.configDir = featureToggleConfig.getConfigDirectory();
+        loadedConfigurationSources.put(DefaultConfigurationSource.NAME, new DefaultConfigurationSource.Factory().create(ImmutableMap.of()));
     }
 
     private static List<File> listFiles(File dir)
@@ -94,7 +88,6 @@ public class FeatureToggleConfigurationManager
         else {
             configDirectory = new File(configDir);
         }
-
         for (File file : listFiles(configDirectory)) {
             if (file.isFile() && file.getName().endsWith(".properties")) {
                 String name = getNameWithoutExtension(file.getName());
@@ -106,7 +99,6 @@ public class FeatureToggleConfigurationManager
     }
 
     public void loadConfigurationSources(Map<String, Map<String, String>> configurationProperties)
-            throws IOException
     {
         if (!configurationLoading.compareAndSet(false, true)) {
             return;
@@ -119,7 +111,7 @@ public class FeatureToggleConfigurationManager
         requireNonNull(name, "name is null");
         requireNonNull(properties, "properties is null");
 
-        log.info("-- Loading configuration source %s --", name);
+        log.info(format("-- Loading configuration source %s --", name));
 
         String configurationSourceFactoryName = null;
         ImmutableMap.Builder<String, String> configurationSourceProperties = ImmutableMap.builder();
@@ -141,6 +133,6 @@ public class FeatureToggleConfigurationManager
             throw new IllegalArgumentException(format("Configuration Source '%s' is already loaded", name));
         }
 
-        log.info("-- Loaded Configuration Source %s --", name);
+        log.info(format("-- Loaded Configuration Source %s --", name));
     }
 }

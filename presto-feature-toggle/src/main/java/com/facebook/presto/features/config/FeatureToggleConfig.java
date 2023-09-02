@@ -33,7 +33,7 @@ public class FeatureToggleConfig
     private String configDirectory;
     private Duration refreshPeriod;
 
-    @NotNull
+//    @NotNull
     public String getConfigSource()
     {
         return configSource;
