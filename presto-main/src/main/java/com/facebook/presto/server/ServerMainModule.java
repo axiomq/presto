@@ -771,7 +771,7 @@ public class ServerMainModule
 //                featureToggleConfig -> "database".equalsIgnoreCase(featureToggleConfig.getConfigSourceType()),
 //                new DatabaseBasedFeatureSource()));
 //
-        install(new FeatureToggleModule());
+//        install(new FeatureToggleModule());
 
         // Thrift RPC
         binder.install(new DriftNettyServerModule());

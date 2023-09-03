@@ -22,6 +22,7 @@ import com.google.inject.Inject;
 import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.Scopes;
+import io.airlift.units.Duration;
 
 import static com.facebook.airlift.jaxrs.JaxrsBinder.jaxrsBinder;
 import static com.google.common.base.Suppliers.memoizeWithExpiration;
@@ -30,6 +31,8 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 public class FeatureToggleModule
         implements Module
 {
+    private static final String DEFAULT_DURATION = "60s";
+
     @Override
     public void configure(Binder binder)
     {
@@ -45,18 +48,22 @@ public class FeatureToggleModule
     {
         String configSourceType;
         if (config.getConfigSourceType() == null) {
-           configSourceType = DefaultConfigurationSource.NAME;
+            configSourceType = DefaultConfigurationSource.NAME;
         }
         else {
             configSourceType = config.getConfigSourceType();
         }
 
-        if (config.getRefreshPeriod() != null) {
-            return ForwardingFeaturesConfiguration.of(memoizeWithExpiration(
-                    () -> configurationManager.getConfigurationSource(configSourceType).getConfiguration(),
-                    config.getRefreshPeriod().toMillis(),
-                    MILLISECONDS));
+        Duration refreshPeriod;
+        if (config.getRefreshPeriod() == null) {
+            refreshPeriod = Duration.valueOf(DEFAULT_DURATION);
         }
-        return configurationManager.getConfigurationSource(configSourceType).getConfiguration();
+        else {
+            refreshPeriod = config.getRefreshPeriod();
+        }
+        return ForwardingFeaturesConfiguration.of(memoizeWithExpiration(
+                () -> configurationManager.getConfigurationSource(configSourceType).getConfiguration(),
+                refreshPeriod.toMillis(),
+                MILLISECONDS));
     }
 }
