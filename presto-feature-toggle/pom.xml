@@ -60,7 +60,6 @@
             <artifactId>log</artifactId>
         </dependency>
 
-        <!-- Presto SPI -->
         <dependency>
             <groupId>com.facebook.presto</groupId>
             <artifactId>presto-spi</artifactId>

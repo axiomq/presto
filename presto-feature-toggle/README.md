@@ -16,19 +16,100 @@ using FeatureToggleBinder. FeatureToggleBinder creates FeatureToggle, and additi
 
 ## Configuration
 
-To allow feature toggle configuration four lines are needed in the config.properties file
+Feature Toggle are allowed by default.
+Feature toggles can be defined using featureToggleBinder. By default, only static feature toggles are allowed.
+Feature toggles configuration are defined using plugin mechanism. Default Feature toggle plugin defines `file` configuration source.
+
+In Presto config properties we can define `feature.config-source-type` property. For each configuration source type, we need to add source configuration file. Default
+directory for source configuration files is `etc/feature-toggle`. Directory for source configuration can be changed in Presto config.properties.
+
+Example feature toggle configuration in config.properties file
 
 ```
     features.config-source-type=file
-    features.config-source=/etc/feature-config.properties
-    features.config-type=properties
+    features.configuration-directory=etc/feature-toggle
     features.refresh-period=30s
 ```
 
-- `configuration-source-type` is the source type for Feature Toggles configuration
+- `configuration-source-type` is the source type for Feature Toggles configuration - default: no configuration source is defined
+- `features.refresh-period` configuration refresh period - default: `60s`
+- `features.configuration-directory` feature toggle configuration sources configuration directory - default: `etc/feature-toggle`
+
+### Feature Toggle configuration source configuration
+
+For each configuration source we must add a configuration properties file in `features.configuration-directory`. Each configuration source can have their own set of properties.
+For default configuration source we could add a `file.configuration` properties in directory containing configuration source configurations.
+
+Example configuration for `file` configuration source `etc/feature-toggle/file.configuration` :
+
+```
+   features.config-source-type=file
+   features.config-source=/etc/feature-config.properties
+   features.config-type=properties
+```
+
+- `configuration-source-type` is the source type for Feature Toggles configuration - should be the same as file name
 - `features.config-source` is a source (file) of the configuration
 - `features.config-type` format in which configuration is stored (JSON or properties)
-- `features.refresh-period` configuration refresh period
+
+### Adding new configuration source
+
+New configuration source must extend `com.facebook.presto.spi.features.ConfigurationSource`.
+We must also define `com.facebook.presto.spi.features.ConfigurationSourceFactory` and register factory through plugin mechanism.
+
+The `com.facebook.presto.features.plugin.FeatureToggleFileConfigurationSource`:
+
+```
+/**
+ * The "file" Feature Toggle configuration source.
+ * Configuration source loads Feature toggle configuration form file.
+ * File can be in properties or json format.
+ * Configuration Source takes two parameter type (properties or json) and location (physical location of the file)
+ */
+public class FeatureToggleFileConfigurationSource
+        implements ConfigurationSource
+{   
+    public static final String NAME = "file"; \\ the name of the configuration source
+    public static final String FEATURES_CONFIG_SOURCE = "features.config-source"; \\ configuration source configuration property
+    public static final String FEATURES_CONFIG_SOURCE_TYPE = "features.config-type";  \\ configuration source configuration property
+
+    private final String location;
+    private final String type;
+
+    public FeatureToggleFileConfigurationSource(String location, String type)
+    {
+        this.location = location;
+        this.type = type;
+    }
+
+    @Override
+    public FeatureToggleConfiguration getConfiguration()
+    {
+        return new DefaultFeatureToggleConfiguration(parseConfiguration(location, type));
+    }
+
+    // The configuration source factory  
+    public static class Factory
+            implements ConfigurationSourceFactory
+    {
+        @Override
+        public String getName()
+        {
+            return NAME;
+        }
+
+        @Override
+        public ConfigurationSource create(Map<String, String> config)
+        {
+            String location = config.get(FEATURES_CONFIG_SOURCE);
+            checkState(location != null, "Configuration source path configuration must contain the '%s' property", FEATURES_CONFIG_SOURCE);
+            String type = config.get(FEATURES_CONFIG_SOURCE_TYPE);
+            checkState(type != null, "Configuration type configuration must contain the '%s' property", FEATURES_CONFIG_SOURCE_TYPE);
+            return new FeatureToggleFileConfigurationSource(location, type);
+        }
+    }
+
+```
 
 ## Defining Feature Toggles
 

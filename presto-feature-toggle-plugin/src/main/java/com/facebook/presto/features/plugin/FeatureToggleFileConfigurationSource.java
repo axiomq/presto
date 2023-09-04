@@ -23,6 +23,12 @@ import java.util.Map;
 import static com.facebook.presto.features.config.ConfigurationParser.parseConfiguration;
 import static com.google.common.base.Preconditions.checkState;
 
+/**
+ * The "file" Feature Toggle configuration source.
+ * Configuration source loads Feature toggle configuration form file.
+ * File can be in properties or json format.
+ * Configuration Source takes two parameter type (properties or json) and location (physical location of the file)
+ */
 public class FeatureToggleFileConfigurationSource
         implements ConfigurationSource
 {
