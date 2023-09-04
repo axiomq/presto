@@ -31,6 +31,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.inject.multibindings.MapBinder.newMapBinder;
 import static java.util.Objects.requireNonNull;
 
 public class FeatureToggleBinder<T>
@@ -124,10 +125,17 @@ public class FeatureToggleBinder<T>
         return this;
     }
 
+    public void init()
+    {
+        newMapBinder(binder, String.class, Object.class, FeatureToggles.named("feature-instance-map"));
+        newMapBinder(binder, new TypeLiteral<String>() {}, new TypeLiteral<Feature<?>>() {}, FeatureToggles.named("feature-map"));
+        newMapBinder(binder, String.class, FeatureToggleStrategy.class);
+    }
+
     public void bind()
     {
-        MapBinder<String, Object> featureInstanceMap = MapBinder.newMapBinder(binder, String.class, Object.class, FeatureToggles.named("feature-instance-map"));
-        MapBinder<String, Feature<?>> featureMap = MapBinder.newMapBinder(binder, new TypeLiteral<String>() {}, new TypeLiteral<Feature<?>>() {}, FeatureToggles.named("feature-map"));
+        MapBinder<String, Object> featureInstanceMap = newMapBinder(binder, String.class, Object.class, FeatureToggles.named("feature-instance-map"));
+        MapBinder<String, Feature<?>> featureMap = newMapBinder(binder, new TypeLiteral<String>() {}, new TypeLiteral<Feature<?>>() {}, FeatureToggles.named("feature-map"));
         classes.forEach(klass -> featureInstanceMap.addBinding(klass.getName()).to(klass));
         FeatureToggleStrategyConfig featureToggleStrategyConfig = null;
         if (strategy != null) {
@@ -167,7 +175,7 @@ public class FeatureToggleBinder<T>
 
     public FeatureToggleBinder<T> registerToggleStrategy(String strategyName, Class<? extends FeatureToggleStrategy> featureToggleStrategyClass)
     {
-        MapBinder<String, FeatureToggleStrategy> featureToggleStrategyMap = MapBinder.newMapBinder(binder, String.class, FeatureToggleStrategy.class);
+        MapBinder<String, FeatureToggleStrategy> featureToggleStrategyMap = newMapBinder(binder, String.class, FeatureToggleStrategy.class);
         featureToggleStrategyMap.addBinding(strategyName).to(featureToggleStrategyClass);
         return this;
     }

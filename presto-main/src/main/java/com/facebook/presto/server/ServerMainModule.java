@@ -255,6 +255,7 @@ import static com.facebook.drift.codec.guice.ThriftCodecBinder.thriftCodecBinder
 import static com.facebook.drift.server.guice.DriftServerBinder.driftServerBinder;
 import static com.facebook.presto.execution.scheduler.NodeSchedulerConfig.NetworkTopologyType.FLAT;
 import static com.facebook.presto.execution.scheduler.NodeSchedulerConfig.NetworkTopologyType.LEGACY;
+import static com.facebook.presto.features.binder.FeatureToggleBinder.featureToggleBinder;
 import static com.facebook.presto.server.ServerConfig.POOL_TYPE;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.nullToEmpty;
@@ -759,6 +760,7 @@ public class ServerMainModule
         // Feature Toggle
         configBinder(binder).bindConfig(FeatureToggleConfig.class);
         install(new FeatureToggleModule());
+        featureToggleBinder(binder).init();
 
         // Thrift RPC
         binder.install(new DriftNettyServerModule());

@@ -149,11 +149,6 @@ public class CoordinatorModule
         // presto coordinator announcement
         discoveryBinder(binder).bindHttpAnnouncement("presto-coordinator");
 
-//        install(installModuleIf(
-//                FeatureToggleConfig.class,
-//                featureToggleConfig -> "file".equalsIgnoreCase(featureToggleConfig.getConfigSourceType()),
-//                new FileBasedFeatureToggleModule()));
-
         featureToggleBinder(binder, QueryRateLimiter.class)
                 .featureId("query-rate-limiter")
                 .baseClass(QueryRateLimiter.class)
@@ -184,7 +179,6 @@ public class CoordinatorModule
                 .registerToggleStrategy("AllowList", AllowListToggleStrategy.class);
 
         binder.install(new MemoryContextModule());
-//        jaxrsBinder(binder).bind(FeatureToggleInfo.class);
 
         // statement resource
         jsonCodecBinder(binder).bindJsonCodec(QueryInfo.class);
@@ -339,10 +333,10 @@ public class CoordinatorModule
 
         // cleanup
         binder.bind(ExecutorCleanup.class).in(Scopes.SINGLETON);
-
-        binder.bind(PrestoFeatureToggle.class).in(Singleton.class);
-
-        jaxrsBinder(binder).bind(FeatureToggleInfo.class);
+//
+//        binder.bind(PrestoFeatureToggle.class).in(Singleton.class);
+//
+//        jaxrsBinder(binder).bind(FeatureToggleInfo.class);
     }
 
     @Provides
