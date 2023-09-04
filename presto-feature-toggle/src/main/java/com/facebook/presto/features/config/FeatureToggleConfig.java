@@ -17,8 +17,6 @@ import com.facebook.airlift.configuration.Config;
 import io.airlift.units.Duration;
 import io.airlift.units.MinDuration;
 
-import javax.validation.constraints.NotNull;
-
 public class FeatureToggleConfig
 {
     public static final String FEATURES_CONFIG_SOURCE = "features.config-source";
@@ -33,7 +31,6 @@ public class FeatureToggleConfig
     private String configDirectory;
     private Duration refreshPeriod;
 
-//    @NotNull
     public String getConfigSource()
     {
         return configSource;
