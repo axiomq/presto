@@ -125,13 +125,6 @@ public class FeatureToggleBinder<T>
         return this;
     }
 
-    public void init()
-    {
-        newMapBinder(binder, String.class, Object.class, FeatureToggles.named("feature-instance-map"));
-        newMapBinder(binder, new TypeLiteral<String>() {}, new TypeLiteral<Feature<?>>() {}, FeatureToggles.named("feature-map"));
-        newMapBinder(binder, String.class, FeatureToggleStrategy.class);
-    }
-
     public void bind()
     {
         MapBinder<String, Object> featureInstanceMap = newMapBinder(binder, String.class, Object.class, FeatureToggles.named("feature-instance-map"));

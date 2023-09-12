@@ -13,8 +13,11 @@
  */
 package com.facebook.presto.features.config;
 
+import com.facebook.presto.features.annotations.FeatureToggles;
+import com.facebook.presto.features.binder.Feature;
 import com.facebook.presto.features.binder.PrestoFeatureToggle;
 import com.facebook.presto.features.http.FeatureToggleInfo;
+import com.facebook.presto.features.strategy.FeatureToggleStrategy;
 import com.facebook.presto.features.strategy.FeatureToggleStrategyFactory;
 import com.facebook.presto.spi.features.FeatureToggleConfiguration;
 import com.google.inject.Binder;
@@ -22,10 +25,12 @@ import com.google.inject.Inject;
 import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.Scopes;
+import com.google.inject.TypeLiteral;
 import io.airlift.units.Duration;
 
 import static com.facebook.airlift.jaxrs.JaxrsBinder.jaxrsBinder;
 import static com.google.common.base.Suppliers.memoizeWithExpiration;
+import static com.google.inject.multibindings.MapBinder.newMapBinder;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class FeatureToggleModule
@@ -40,6 +45,9 @@ public class FeatureToggleModule
         binder.bind(FeatureToggleStrategyFactory.class);
         binder.bind(PrestoFeatureToggle.class).in(Scopes.SINGLETON);
         binder.bind(FeatureToggleConfigurationManager.class).in(Scopes.SINGLETON);
+        newMapBinder(binder, String.class, Object.class, FeatureToggles.named("feature-instance-map"));
+        newMapBinder(binder, new TypeLiteral<String>() {}, new TypeLiteral<Feature<?>>() {}, FeatureToggles.named("feature-map"));
+        newMapBinder(binder, String.class, FeatureToggleStrategy.class);
     }
 
     @Inject

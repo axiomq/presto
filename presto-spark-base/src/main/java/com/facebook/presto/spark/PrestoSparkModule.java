@@ -221,7 +221,6 @@ import static com.facebook.airlift.configuration.ConfigBinder.configBinder;
 import static com.facebook.airlift.json.JsonBinder.jsonBinder;
 import static com.facebook.airlift.json.JsonCodecBinder.jsonCodecBinder;
 import static com.facebook.airlift.json.smile.SmileCodecBinder.smileCodecBinder;
-import static com.facebook.presto.features.binder.FeatureToggleBinder.featureToggleBinder;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static com.google.inject.multibindings.OptionalBinder.newOptionalBinder;
 import static java.util.Objects.requireNonNull;
@@ -538,8 +537,7 @@ public class PrestoSparkModule
 
         // Feature Toggle
         configBinder(binder).bindConfig(FeatureToggleConfig.class);
-        install(new FeatureToggleModule());
-        featureToggleBinder(binder).init();
+        binder.install(new FeatureToggleModule());
 
         // extra credentials and authenticator for Presto-on-Spark
         newSetBinder(binder, PrestoSparkCredentialsProvider.class);
