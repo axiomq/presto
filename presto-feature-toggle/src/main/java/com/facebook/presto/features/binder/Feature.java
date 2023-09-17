@@ -51,6 +51,11 @@ public class Feature<T>
         this.prestoFeatureToggle = prestoFeatureToggle;
     }
 
+    public boolean check(Object object)
+    {
+        return prestoFeatureToggle.isEnabled(featureId, object);
+    }
+
     public T getCurrentInstance(String featureId)
     {
         if (baseClass == null) {

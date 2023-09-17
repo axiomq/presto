@@ -14,17 +14,25 @@
 package com.facebook.presto.features.binder;
 
 import com.facebook.presto.features.annotations.FeatureToggles;
+import com.facebook.presto.features.strategy.FeatureToggleStrategy;
 import com.facebook.presto.spi.features.FeatureConfiguration;
+import com.facebook.presto.spi.features.FeatureToggleStrategyConfig;
 import com.google.inject.Binder;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static com.facebook.presto.features.config.FeatureToggleModule.FEATURE_INSTANCE_MAP;
+import static com.facebook.presto.features.config.FeatureToggleModule.FEATURE_MAP;
+import static com.facebook.presto.features.config.FeatureToggleModule.FEATURE_STRATEGY_MAP;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.inject.multibindings.MapBinder.newMapBinder;
 import static java.util.Objects.requireNonNull;
@@ -38,8 +46,10 @@ public class FeatureToggleBinder<T>
     private boolean hotReloadable;
     private String featureId;
     private boolean enabled = true;
+    private String strategy;
+    private Map<String, String> strategyConfigMap = new ConcurrentHashMap<>();
 
-    public FeatureToggleBinder(Binder binder, Class<T> baseClass, Class<? extends T> defaultClass, Set<Class<? extends T>> classes, boolean hotReloadable, String featureId, boolean enabled)
+    public FeatureToggleBinder(Binder binder, Class<T> baseClass, Class<? extends T> defaultClass, Set<Class<? extends T>> classes, boolean hotReloadable, String featureId, boolean enabled, String strategy, Map<String, String> strategyConfigMap)
     {
         this.binder = binder;
         this.baseClass = baseClass;
@@ -48,6 +58,8 @@ public class FeatureToggleBinder<T>
         this.hotReloadable = hotReloadable;
         this.featureId = featureId;
         this.enabled = enabled;
+        this.strategy = strategy;
+        this.strategyConfigMap = strategyConfigMap;
     }
 
     private FeatureToggleBinder(Binder binder)
@@ -74,7 +86,7 @@ public class FeatureToggleBinder<T>
     public FeatureToggleBinder<T> baseClass(Class<T> baseClass)
     {
         requireNonNull(baseClass, "base class is null");
-        return new FeatureToggleBinder<>(binder, baseClass, defaultClass, classes, hotReloadable, featureId, enabled);
+        return new FeatureToggleBinder<>(binder, baseClass, defaultClass, classes, hotReloadable, featureId, enabled, strategy, strategyConfigMap);
     }
 
     public FeatureToggleBinder<T> featureId(String featureId)
@@ -104,11 +116,34 @@ public class FeatureToggleBinder<T>
         return this;
     }
 
+    public FeatureToggleBinder<T> toggleStrategy(String strategy)
+    {
+        this.strategy = requireNonNull(strategy, "strategy is null");
+        return this;
+    }
+
+    public FeatureToggleBinder<T> toggleStrategyConfig(Map<String, String> strategyConfigMap)
+    {
+        this.strategyConfigMap = requireNonNull(strategyConfigMap, "strategy config map is null");
+        return this;
+    }
+
+    public FeatureToggleBinder<T> registerToggleStrategy(String strategyName, Class<? extends FeatureToggleStrategy> featureToggleStrategyClass)
+    {
+        MapBinder<String, FeatureToggleStrategy> featureToggleStrategyMap = newMapBinder(binder, String.class, FeatureToggleStrategy.class, FeatureToggles.named(FEATURE_STRATEGY_MAP));
+        featureToggleStrategyMap.addBinding(strategyName).to(featureToggleStrategyClass);
+        return this;
+    }
+
     public void bind()
     {
-        MapBinder<String, Object> featureInstanceMap = newMapBinder(binder, String.class, Object.class, FeatureToggles.named("feature-instance-map"));
-        MapBinder<String, Feature<?>> featureMap = newMapBinder(binder, new TypeLiteral<String>() {}, new TypeLiteral<Feature<?>>() {}, FeatureToggles.named("feature-map"));
+        MapBinder<String, Object> featureInstanceMap = newMapBinder(binder, String.class, Object.class, FeatureToggles.named(FEATURE_INSTANCE_MAP));
+        MapBinder<String, Feature<?>> featureMap = newMapBinder(binder, new TypeLiteral<String>() {}, new TypeLiteral<Feature<?>>() {}, FeatureToggles.named(FEATURE_MAP));
         classes.forEach(klass -> featureInstanceMap.addBinding(klass.getName()).to(klass));
+        FeatureToggleStrategyConfig featureToggleStrategyConfig = null;
+        if (strategy != null) {
+            featureToggleStrategyConfig = new FeatureToggleStrategyConfig(strategy, strategyConfigMap);
+        }
         FeatureConfiguration configuration = new FeatureConfiguration(
                 featureId,
                 enabled,
@@ -116,12 +151,16 @@ public class FeatureToggleBinder<T>
                 baseClass == null ? null : baseClass.getName(),
                 classes.stream().map(Class::getName).collect(Collectors.toList()),
                 defaultClass == null ? null : defaultClass.getName(),
-                defaultClass == null ? null : defaultClass.getName());
+                defaultClass == null ? null : defaultClass.getName(),
+                featureToggleStrategyConfig);
         Feature<T> feature = new Feature<>(featureId, baseClass, configuration);
         featureMap.addBinding(featureId).toInstance(feature);
 
         // bind supplier for simple toggle check
         binder.bind(new TypeLiteral<Supplier<Boolean>>() {}).annotatedWith(FeatureToggles.named(featureId)).toInstance(feature::isEnabled);
+
+        // bind function toggle check while passing object
+        binder.bind(new TypeLiteral<Function<Object, Boolean>>() {}).annotatedWith(FeatureToggles.named(featureId)).toInstance(feature::check);
 
         if (baseClass != null) {
             checkState(defaultClass != null, "Invalid Feature Toggle binding: base class without default class");

@@ -14,13 +14,18 @@
 package com.facebook.presto.features.binder;
 
 import com.facebook.presto.features.annotations.FeatureToggle;
+import com.facebook.presto.features.strategy.FeatureToggleStrategy;
+import com.facebook.presto.features.strategy.FeatureToggleStrategyFactory;
 import com.facebook.presto.spi.features.FeatureConfiguration;
 import com.facebook.presto.spi.features.FeatureToggleConfiguration;
+import com.facebook.presto.spi.features.FeatureToggleStrategyConfig;
 import com.google.inject.Inject;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.facebook.presto.features.config.FeatureToggleModule.FEATURE_INSTANCE_MAP;
+import static com.facebook.presto.features.config.FeatureToggleModule.FEATURE_MAP;
 import static java.util.Objects.requireNonNull;
 
 public class PrestoFeatureToggle
@@ -28,17 +33,20 @@ public class PrestoFeatureToggle
     private final Map<String, Feature<?>> featureMap;
     private final Map<String, Object> featureInstanceMap;
     private final FeatureToggleConfiguration featureToggleConfiguration;
+    private final FeatureToggleStrategyFactory featureToggleStrategyFactory;
 
     @Inject
     public PrestoFeatureToggle(
-            @FeatureToggle("feature-map") Map<String, Feature<?>> featureMap,
-            @FeatureToggle("feature-instance-map") Map<String, Object> featureInstanceMap,
-            FeatureToggleConfiguration featureToggleConfiguration)
+            @FeatureToggle(FEATURE_MAP) Map<String, Feature<?>> featureMap,
+            @FeatureToggle(FEATURE_INSTANCE_MAP) Map<String, Object> featureInstanceMap,
+            FeatureToggleConfiguration featureToggleConfiguration,
+            FeatureToggleStrategyFactory featureToggleStrategyFactory)
     {
         this.featureMap = requireNonNull(featureMap);
         this.featureInstanceMap = requireNonNull(featureInstanceMap);
         this.featureToggleConfiguration = requireNonNull(featureToggleConfiguration);
         this.featureMap.values().forEach(f -> f.setContext(this));
+        this.featureToggleStrategyFactory = requireNonNull(featureToggleStrategyFactory);
     }
 
     public boolean isEnabled(String featureId)
@@ -46,7 +54,68 @@ public class PrestoFeatureToggle
         AtomicBoolean enabled = new AtomicBoolean(true);
         checkEnabledFromStaticConfiguration(featureId, enabled);
         checkEnabledFromDynamicConfiguration(featureId, enabled);
+        checkEnabledFromToggleStrategy(featureId, enabled);
         return enabled.get();
+    }
+
+    public boolean isEnabled(String featureId, Object object)
+    {
+        AtomicBoolean enabled = new AtomicBoolean(true);
+        checkEnabledFromStaticConfiguration(featureId, enabled);
+        // dynamic configuration overrides static configuration
+        checkEnabledFromDynamicConfiguration(featureId, enabled);
+        checkEnabledFromToggleStrategy(featureId, object, enabled);
+        return enabled.get();
+    }
+
+    private void checkEnabledFromToggleStrategy(String featureId, AtomicBoolean enabled)
+    {
+        if (enabled.get()) {
+            FeatureConfiguration dynamicFeatureConfiguration = featureToggleConfiguration.getFeatureConfiguration(featureId);
+            FeatureConfiguration staticFeatureConfiguration = featureMap.get(featureId).getConfiguration();
+            FeatureConfiguration featureConfiguration = null;
+            String toggleStrategyClass = null;
+            if (dynamicFeatureConfiguration != null && dynamicFeatureConfiguration.getFeatureToggleStrategyConfig().isPresent()) {
+                toggleStrategyClass = dynamicFeatureConfiguration.getFeatureToggleStrategyConfig().get().getToggleStrategyName();
+                featureConfiguration = dynamicFeatureConfiguration;
+            }
+            else if (staticFeatureConfiguration.getFeatureToggleStrategyConfig().isPresent()) {
+                FeatureToggleStrategyConfig featureToggleStrategyConfig = staticFeatureConfiguration.getFeatureToggleStrategyConfig().get();
+                toggleStrategyClass = featureToggleStrategyConfig.getToggleStrategyName();
+                featureConfiguration = staticFeatureConfiguration;
+            }
+            if (toggleStrategyClass != null) {
+                FeatureToggleStrategy strategy = featureToggleStrategyFactory.get(toggleStrategyClass);
+                if (strategy != null) {
+                    enabled.set(strategy.check(featureConfiguration));
+                }
+            }
+        }
+    }
+
+    private void checkEnabledFromToggleStrategy(String featureId, Object object, AtomicBoolean enabled)
+    {
+        if (enabled.get()) {
+            FeatureConfiguration dynamicFeatureConfiguration = featureToggleConfiguration.getFeatureConfiguration(featureId);
+            FeatureConfiguration staticFeatureConfiguration = featureMap.get(featureId).getConfiguration();
+            FeatureConfiguration featureConfiguration = null;
+            String toggleStrategyClass = null;
+            if (dynamicFeatureConfiguration != null && dynamicFeatureConfiguration.getFeatureToggleStrategyConfig().isPresent()) {
+                toggleStrategyClass = dynamicFeatureConfiguration.getFeatureToggleStrategyConfig().get().getToggleStrategyName();
+                featureConfiguration = dynamicFeatureConfiguration;
+            }
+            else if (staticFeatureConfiguration.getFeatureToggleStrategyConfig().isPresent()) {
+                FeatureToggleStrategyConfig featureToggleStrategyConfig = staticFeatureConfiguration.getFeatureToggleStrategyConfig().get();
+                toggleStrategyClass = featureToggleStrategyConfig.getToggleStrategyName();
+                featureConfiguration = staticFeatureConfiguration;
+            }
+            if (toggleStrategyClass != null) {
+                FeatureToggleStrategy strategy = featureToggleStrategyFactory.get(toggleStrategyClass);
+                if (strategy != null) {
+                    enabled.set(strategy.check(featureConfiguration, object));
+                }
+            }
+        }
     }
 
     private void checkEnabledFromDynamicConfiguration(String featureId, AtomicBoolean enabled)
