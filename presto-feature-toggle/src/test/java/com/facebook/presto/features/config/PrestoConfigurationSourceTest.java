@@ -15,6 +15,8 @@ package com.facebook.presto.features.config;
 
 import com.facebook.presto.features.annotations.FeatureToggle;
 import com.facebook.presto.features.binder.PrestoFeatureToggle;
+import com.facebook.presto.features.test.TestConfigurationSource;
+import com.facebook.presto.features.test.TestConfigurationSourceFactory;
 import com.facebook.presto.spi.features.FeatureConfiguration;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Guice;
@@ -31,6 +33,7 @@ import java.util.function.Supplier;
 
 import static com.facebook.presto.features.TestUtils.sleep;
 import static com.facebook.presto.features.binder.FeatureToggleBinder.featureToggleBinder;
+import static com.facebook.presto.features.config.FeatureToggleConfig.FEATURES_CONFIG_SOURCE_TYPE;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
@@ -75,7 +78,7 @@ public class PrestoConfigurationSourceTest
         // configuration sources factories are added through plugin mechanism
         injector.getInstance(FeatureToggleConfigurationManager.class).addConfigurationSourceFactory(configurationSourceFactory);
         //  load configuration source
-        injector.getInstance(FeatureToggleConfigurationManager.class).loadConfigurationSource(TestConfigurationSource.NAME, ImmutableMap.of("features.config-source-type", TestConfigurationSource.NAME));
+        injector.getInstance(FeatureToggleConfigurationManager.class).loadConfigurationSource(TestConfigurationSource.NAME, ImmutableMap.of(FEATURES_CONFIG_SOURCE_TYPE, TestConfigurationSource.NAME));
 
         Provider<SupplierInjectionTestClass> provider = injector.getProvider(SupplierInjectionTestClass.class);
         SupplierInjectionTestClass supplierInjectionTestClass = provider.get();

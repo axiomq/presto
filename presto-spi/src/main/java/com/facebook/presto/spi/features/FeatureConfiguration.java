@@ -19,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class FeatureConfiguration
@@ -30,6 +31,7 @@ public class FeatureConfiguration
     private List<String> featureInstances;
     private String currentInstance;
     private String defaultInstance;
+    private FeatureToggleStrategyConfig featureToggleStrategyConfig;
 
     @JsonCreator
     public FeatureConfiguration(
@@ -39,7 +41,8 @@ public class FeatureConfiguration
             @JsonProperty String featureClass,
             @JsonProperty List<String> featureInstances,
             @JsonProperty String currentInstance,
-            @JsonProperty String defaultInstance)
+            @JsonProperty String defaultInstance,
+            @JsonProperty FeatureToggleStrategyConfig featureToggleStrategyConfig)
     {
         this.featureId = featureId;
         this.featureClass = featureClass;
@@ -48,6 +51,7 @@ public class FeatureConfiguration
         this.featureInstances = featureInstances;
         this.currentInstance = currentInstance;
         this.defaultInstance = defaultInstance;
+        this.featureToggleStrategyConfig = featureToggleStrategyConfig;
     }
 
     public static FeatureConfigurationBuilder builder()
@@ -121,6 +125,17 @@ public class FeatureConfiguration
         this.defaultInstance = defaultInstance;
     }
 
+    @JsonProperty
+    public Optional<FeatureToggleStrategyConfig> getFeatureToggleStrategyConfig()
+    {
+        return Optional.ofNullable(featureToggleStrategyConfig);
+    }
+
+    public void setFeatureToggleStrategyConfig(FeatureToggleStrategyConfig featureToggleStrategyConfig)
+    {
+        this.featureToggleStrategyConfig = featureToggleStrategyConfig;
+    }
+
     public boolean getHotReloadable()
     {
         return hotReloadable;
@@ -190,6 +205,7 @@ public class FeatureConfiguration
         private List<String> featureInstances = new ArrayList<>();
         private String currentInstance;
         private String defaultInstance;
+        private FeatureToggleStrategyConfig featureToggleStrategyConfig;
 
         FeatureConfigurationBuilder()
         {
@@ -237,14 +253,20 @@ public class FeatureConfiguration
             return this;
         }
 
+        public FeatureConfigurationBuilder featureToggleStrategyConfig(FeatureToggleStrategyConfig featureToggleStrategyConfig)
+        {
+            this.featureToggleStrategyConfig = featureToggleStrategyConfig;
+            return this;
+        }
+
         public FeatureConfiguration build()
         {
-            return new FeatureConfiguration(featureId, enabled, hotReloadable, featureClass, featureInstances, currentInstance, defaultInstance);
+            return new FeatureConfiguration(featureId, enabled, hotReloadable, featureClass, featureInstances, currentInstance, defaultInstance, featureToggleStrategyConfig);
         }
 
         public String toString()
         {
-            return "FeatureConfiguration.FeatureConfigurationBuilder(featureId=" + this.featureId + ", enabled=" + this.enabled + ", featureClass=" + this.featureClass + ", hotReloadable=" + this.hotReloadable + ", featureInstances=" + this.featureInstances + ", currentInstance=" + this.currentInstance + ", defaultInstance=" + this.defaultInstance + ")";
+            return "FeatureConfiguration.FeatureConfigurationBuilder(featureId=" + this.featureId + ", enabled=" + this.enabled + ", featureClass=" + this.featureClass + ", hotReloadable=" + this.hotReloadable + ", featureInstances=" + this.featureInstances + ", currentInstance=" + this.currentInstance + ", defaultInstance=" + this.defaultInstance + ", featureToggleStrategyConfig=" + this.featureToggleStrategyConfig + ")";
         }
     }
 }

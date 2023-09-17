@@ -14,8 +14,12 @@
 package com.facebook.presto.features.binder;
 
 import com.facebook.presto.features.config.TestFeatureToggleConfiguration;
+import com.facebook.presto.features.strategy.BooleanStringStrategy;
+import com.facebook.presto.features.strategy.FeatureToggleStrategyFactory;
 import com.facebook.presto.spi.features.FeatureConfiguration;
 import com.facebook.presto.spi.features.FeatureToggleConfiguration;
+import com.facebook.presto.spi.features.FeatureToggleStrategyConfig;
+import com.google.common.collect.ImmutableMap;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -34,6 +38,7 @@ public class PrestoFeatureToggleTest
      */
     private final Map<String, FeatureConfiguration> config = new HashMap<>();
     private final Map<String, Object> featureInstanceMap = new HashMap<>();
+    private final FeatureToggleStrategyFactory featureToggleStrategyFactory = new FeatureToggleStrategyFactory(ImmutableMap.of("BooleanString", new BooleanStringStrategy()));
     private Map<String, Feature<?>> featureMap;
     private FeatureToggleConfiguration featureToggleConfiguration;
 
@@ -42,6 +47,7 @@ public class PrestoFeatureToggleTest
     {
         config.clear();
         featureMap = new HashMap<>();
+        FeatureToggleStrategyConfig booleanStringStrategyConfig = new FeatureToggleStrategyConfig("BooleanString", ImmutableMap.of("allow-values", "yes,no"));
 
         FeatureConfiguration simpleFeatureConfiguration = FeatureConfiguration.builder()
                 .featureId(simpleFeatureId)
@@ -51,6 +57,7 @@ public class PrestoFeatureToggleTest
 
         FeatureConfiguration simpleFeatureWithStrategyToggleConfiguration = FeatureConfiguration.builder()
                 .featureId(simpleFeatureWithStrategyToggleId)
+                .featureToggleStrategyConfig(booleanStringStrategyConfig)
                 .build();
         Feature<String> simpleFeatureWithStrategyToggle = new Feature<>(simpleFeatureWithStrategyToggleId, null, simpleFeatureWithStrategyToggleConfiguration);
         featureMap.put(simpleFeatureWithStrategyToggleId, simpleFeatureWithStrategyToggle);
@@ -61,7 +68,7 @@ public class PrestoFeatureToggleTest
     @Test
     public void testSimpleEnabledDisableToggle()
     {
-        PrestoFeatureToggle prestoFeatureToggle = new PrestoFeatureToggle(featureMap, featureInstanceMap, featureToggleConfiguration);
+        PrestoFeatureToggle prestoFeatureToggle = new PrestoFeatureToggle(featureMap, featureInstanceMap, featureToggleConfiguration, featureToggleStrategyFactory);
         boolean enabled;
         enabled = prestoFeatureToggle.isEnabled(simpleFeatureId);
         assertTrue(enabled);
@@ -75,7 +82,7 @@ public class PrestoFeatureToggleTest
     @Test
     public void testSimpleEnabledDisabledToggleWithStrategy()
     {
-        PrestoFeatureToggle prestoFeatureToggle = new PrestoFeatureToggle(featureMap, featureInstanceMap, featureToggleConfiguration);
+        PrestoFeatureToggle prestoFeatureToggle = new PrestoFeatureToggle(featureMap, featureInstanceMap, featureToggleConfiguration, featureToggleStrategyFactory);
         boolean enabled;
         // features are enabled by default
         enabled = prestoFeatureToggle.isEnabled(simpleFeatureWithStrategyToggleId);
@@ -91,12 +98,19 @@ public class PrestoFeatureToggleTest
     @Test
     public void testStrategyEnabledDisabledToggleWithStrategy()
     {
-        PrestoFeatureToggle prestoFeatureToggle = new PrestoFeatureToggle(featureMap, featureInstanceMap, featureToggleConfiguration);
+        PrestoFeatureToggle prestoFeatureToggle = new PrestoFeatureToggle(featureMap, featureInstanceMap, featureToggleConfiguration, featureToggleStrategyFactory);
         boolean enabled;
 
         // feature with id = simpleFeatureWithStrategyToggleId is configured to use BooleanStringStrategy feature toggle strategy
         enabled = prestoFeatureToggle.isEnabled(simpleFeatureWithStrategyToggleId);
         assertTrue(enabled);
+
+        // initially feature is configured to use BooleanStringStrategy with allowed values "yes,no"
+        enabled = prestoFeatureToggle.isEnabled(simpleFeatureWithStrategyToggleId, "yes");
+        assertTrue(enabled);
+
+        enabled = prestoFeatureToggle.isEnabled(simpleFeatureWithStrategyToggleId, "no");
+        assertFalse(enabled);
 
         // change configuration sets feature to disabled
         config.put(simpleFeatureWithStrategyToggleId, FeatureConfiguration.builder()
@@ -106,13 +120,33 @@ public class PrestoFeatureToggleTest
         enabled = prestoFeatureToggle.isEnabled(simpleFeatureWithStrategyToggleId);
         assertFalse(enabled);
 
+        enabled = prestoFeatureToggle.isEnabled(simpleFeatureWithStrategyToggleId, "yes");
+        assertFalse(enabled);
+
+        enabled = prestoFeatureToggle.isEnabled(simpleFeatureWithStrategyToggleId, "no");
+        assertFalse(enabled);
+
         // change configuration
+        FeatureToggleStrategyConfig booleanStringStrategyConfigTrueFalse = new FeatureToggleStrategyConfig("BooleanString", ImmutableMap.of("allow-values", "true,false"));
         config.put(simpleFeatureWithStrategyToggleId, FeatureConfiguration.builder()
                 .featureId(simpleFeatureWithStrategyToggleId)
                 .enabled(true)
+                .featureToggleStrategyConfig(booleanStringStrategyConfigTrueFalse)
                 .build());
         enabled = prestoFeatureToggle.isEnabled(simpleFeatureWithStrategyToggleId);
         assertTrue(enabled);
+
+        enabled = prestoFeatureToggle.isEnabled(simpleFeatureWithStrategyToggleId, "yes");
+        assertFalse(enabled);
+
+        enabled = prestoFeatureToggle.isEnabled(simpleFeatureWithStrategyToggleId, "no");
+        assertFalse(enabled);
+
+        enabled = prestoFeatureToggle.isEnabled(simpleFeatureWithStrategyToggleId, "true");
+        assertTrue(enabled);
+
+        enabled = prestoFeatureToggle.isEnabled(simpleFeatureWithStrategyToggleId, "false");
+        assertFalse(enabled);
 
         // change configuration
         config.put(simpleFeatureWithStrategyToggleId, FeatureConfiguration.builder().featureId(simpleFeatureWithStrategyToggleId).enabled(false).build());
