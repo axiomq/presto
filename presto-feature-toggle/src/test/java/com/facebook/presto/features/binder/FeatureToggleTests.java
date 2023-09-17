@@ -22,8 +22,8 @@ import com.facebook.presto.features.classes.ProviderFeatureImpl;
 import com.facebook.presto.features.config.FeatureToggleConfig;
 import com.facebook.presto.features.config.FeatureToggleConfigurationManager;
 import com.facebook.presto.features.config.FeatureToggleModule;
-import com.facebook.presto.features.config.TestConfigurationSource;
-import com.facebook.presto.features.config.TestConfigurationSourceFactory;
+import com.facebook.presto.features.test.TestConfigurationSource;
+import com.facebook.presto.features.test.TestConfigurationSourceFactory;
 import com.facebook.presto.spi.features.FeatureConfiguration;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Guice;
@@ -37,10 +37,13 @@ import org.testng.annotations.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static com.facebook.presto.features.TestUtils.sleep;
 import static com.facebook.presto.features.binder.FeatureToggleBinder.featureToggleBinder;
+import static com.facebook.presto.features.config.FeatureToggleConfig.FEATURES_CONFIG_SOURCE_TYPE;
+import static com.facebook.presto.features.strategy.AllowAllStrategy.ALLOW_ALL;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
@@ -120,7 +123,7 @@ public class FeatureToggleTests
         // configuration sources factories are added through plugin mechanism
         injector.getInstance(FeatureToggleConfigurationManager.class).addConfigurationSourceFactory(configurationSourceFactory);
         //  load configuration source
-        injector.getInstance(FeatureToggleConfigurationManager.class).loadConfigurationSources(ImmutableMap.of(TestConfigurationSource.NAME, ImmutableMap.of("features.config-source-type", TestConfigurationSource.NAME)));
+        injector.getInstance(FeatureToggleConfigurationManager.class).loadConfigurationSources(ImmutableMap.of(TestConfigurationSource.NAME, ImmutableMap.of(FEATURES_CONFIG_SOURCE_TYPE, TestConfigurationSource.NAME)));
 
         Provider<HotReloadRunner> runner = injector.getProvider(HotReloadRunner.class);
 
@@ -183,7 +186,7 @@ public class FeatureToggleTests
         // configuration sources factories are added through plugin mechanism
         injector.getInstance(FeatureToggleConfigurationManager.class).addConfigurationSourceFactory(configurationSourceFactory);
         //  load configuration source
-        injector.getInstance(FeatureToggleConfigurationManager.class).loadConfigurationSources(ImmutableMap.of(TestConfigurationSource.NAME, ImmutableMap.of("features.config-source-type", TestConfigurationSource.NAME)));
+        injector.getInstance(FeatureToggleConfigurationManager.class).loadConfigurationSources(ImmutableMap.of(TestConfigurationSource.NAME, ImmutableMap.of(FEATURES_CONFIG_SOURCE_TYPE, TestConfigurationSource.NAME)));
 
         Provider<ProviderInjectionRunner> runner = injector.getProvider(ProviderInjectionRunner.class);
 
@@ -243,7 +246,7 @@ public class FeatureToggleTests
         // configuration sources factories are added through plugin mechanism
         injector.getInstance(FeatureToggleConfigurationManager.class).addConfigurationSourceFactory(configurationSourceFactory);
         //  load configuration source
-        injector.getInstance(FeatureToggleConfigurationManager.class).loadConfigurationSources(ImmutableMap.of(TestConfigurationSource.NAME, ImmutableMap.of("features.config-source-type", TestConfigurationSource.NAME)));
+        injector.getInstance(FeatureToggleConfigurationManager.class).loadConfigurationSources(ImmutableMap.of(TestConfigurationSource.NAME, ImmutableMap.of(FEATURES_CONFIG_SOURCE_TYPE, TestConfigurationSource.NAME)));
 
         Provider<SupplierInjectionRunner> runner = injector.getProvider(SupplierInjectionRunner.class);
 
@@ -255,6 +258,150 @@ public class FeatureToggleTests
         sleep();
 
         enabled = runner.get().testSimpleFeatureEnabled();
+        assertFalse(enabled);
+    }
+
+    /**
+     * test injection function that accepts object as parameter
+     * <p>
+     * This function is used to evaluate given parameter in Feature Toggle Strategy.
+     * <p>
+     * definition of the feature toggle with id "FunctionInjectionFeature"
+     * <pre>{@code
+     *        binder -> featureToggleBinder(binder)
+     *                         .featureId("FunctionInjectionFeature")
+     *                         .bind()
+     * }</pre>
+     * <p>
+     * Feature Toggles injects function to parameter annotated with @FeatureToggle("FunctionInjectionFeature")
+     * <pre>{@code
+     *         @Inject
+     *         public FunctionInjectionRunner(@FeatureToggle("FunctionInjectionFeature") Function<Object, Boolean> isFunctionInjectionFeatureEnabled)
+     *         {
+     *             this.isFunctionInjectionFeatureEnabled = isFunctionInjectionFeatureEnabled;
+     *         }
+     * }</pre>
+     * <p>
+     * in first test feature with id "FunctionInjectionFeature" is enabled by default
+     * <pre>{@code
+     *      isFunctionInjectionFeatureEnabled.apply("string") will return true
+     * </pre>
+     * then we change run time configuration for feature, changing parameter enabled to "false"
+     * <pre>{@code
+     *     map.put("FunctionInjectionFeature", FeatureConfiguration.builder().enabled(false).build());
+     * }</pre>
+     * it is same as changing configuration param feature.{FunctionInjectionFeature}.enabled
+     * <pre>
+     *     feature.FunctionInjectionFeature.enable=false
+     * </pre>
+     * after configuration refresh period supplier will return false
+     * <pre>{@code
+     *      isSimpleFeatureEnabled.get() will return false
+     * </pre>
+     */
+    @Test
+    public void testFunctionInjection()
+    {
+        config.clear();
+        Injector injector = Guice.createInjector(
+                // bind Feature Toggle config
+                binder -> binder.bind(FeatureToggleConfig.class).toInstance(featureToggleConfig),
+                // bind Feature Toggle module
+                new FeatureToggleModule(),
+                binder -> featureToggleBinder(binder)
+                        .featureId("FunctionInjectionFeature")
+                        .bind());
+        injector.getProvider(PrestoFeatureToggle.class).get();
+        // configuration sources factories are added through plugin mechanism
+        injector.getInstance(FeatureToggleConfigurationManager.class).addConfigurationSourceFactory(configurationSourceFactory);
+        //  load configuration source
+        injector.getInstance(FeatureToggleConfigurationManager.class).loadConfigurationSources(ImmutableMap.of(TestConfigurationSource.NAME, ImmutableMap.of(FEATURES_CONFIG_SOURCE_TYPE, TestConfigurationSource.NAME)));
+
+        Provider<FunctionInjectionRunner> runner = injector.getProvider(FunctionInjectionRunner.class);
+
+        boolean enabled = runner.get().testFunctionInjectionFeatureEnabled();
+        assertTrue(enabled);
+
+        // change configuration
+        config.put("FunctionInjectionFeature", FeatureConfiguration.builder().enabled(false).build());
+        sleep();
+
+        enabled = runner.get().testFunctionInjectionFeatureEnabled();
+        assertFalse(enabled);
+    }
+
+    /**
+     * test injection function that accepts object as parameter. Function is used to evaluate
+     * <p>
+     * This function is used to evaluate given parameter in Feature Toggle Strategy.
+     * <p>
+     * definition of the feature toggle with id "FunctionInjectionFeature"
+     * <pre>{@code
+     *      binder -> featureToggleBinder(binder)
+     *                         .featureId("FunctionInjectionWithStrategy")
+     *                         // AllowAll is a dummy strategy that will never evaluate to false
+     *                         .toggleStrategy("AllowAll")
+     *                         // dummy params
+     *                         .toggleStrategyConfig(ImmutableMap.of("key", "value", "key2", "value2"))
+     *                         .bind()
+     * }</pre>
+     * <p>
+     * Feature Toggles injects function to parameter annotated with @FeatureToggle("FunctionInjectionWithStrategy")
+     * <pre>{@code
+     *         @Inject
+     *         public FunctionInjectionRunner(@FeatureToggle("FunctionInjectionFeature") Function<Object, Boolean> isFunctionInjectionFeatureEnabled)
+     *         {
+     *            this.isFunctionInjectionFeatureEnabled = isFunctionInjectionFeatureEnabled;
+     *         }
+     * }</pre>
+     * <p>
+     * in first test feature with id "FunctionInjectionWithStrategy" is enabled by default
+     * <pre>{@code
+     *      isFunctionInjectionWithStrategyEnabled.apply("string") will return true
+     * </pre>
+     * then we change run time configuration for feature, changing parameter enabled to "false"
+     * <pre>{@code
+     *     map.put("FunctionInjectionWithStrategy", FeatureConfiguration.builder().enabled(false).build());
+     * }</pre>
+     * it is same as changing configuration param feature.{FunctionInjectionWithStrategy}.enabled
+     * <pre>
+     *     feature.FunctionInjectionWithStrategy.enable=false
+     * </pre>
+     * after configuration refresh period supplier will return false
+     * <pre>{@code
+     *      isSimpleFeatureEnabled.get() will return false
+     * </pre>
+     */
+    @Test
+    public void testFunctionInjectionWithStrategy()
+    {
+        config.clear();
+        Injector injector = Guice.createInjector(
+                // bind Feature Toggle config
+                binder -> binder.bind(FeatureToggleConfig.class).toInstance(featureToggleConfig),
+                // bind Feature Toggle module
+                new FeatureToggleModule(),
+                binder -> featureToggleBinder(binder)
+                        .featureId("FunctionInjectionWithStrategy")
+                        .toggleStrategy(ALLOW_ALL)
+                        .toggleStrategyConfig(ImmutableMap.of("key", "value", "key2", "value2"))
+                        .bind());
+        injector.getProvider(PrestoFeatureToggle.class).get();
+        // configuration sources factories are added through plugin mechanism
+        injector.getInstance(FeatureToggleConfigurationManager.class).addConfigurationSourceFactory(configurationSourceFactory);
+        //  load configuration source
+        injector.getInstance(FeatureToggleConfigurationManager.class).loadConfigurationSources(ImmutableMap.of(TestConfigurationSource.NAME, ImmutableMap.of(FEATURES_CONFIG_SOURCE_TYPE, TestConfigurationSource.NAME)));
+
+        Provider<FunctionInjectionWithStrategyRunner> runner = injector.getProvider(FunctionInjectionWithStrategyRunner.class);
+
+        boolean enabled = runner.get().testFunctionInjectionWithStrategyEnabled();
+        assertTrue(enabled);
+
+        // change configuration
+        config.put("FunctionInjectionWithStrategy", FeatureConfiguration.builder().enabled(false).build());
+        sleep();
+
+        enabled = runner.get().testFunctionInjectionWithStrategyEnabled();
         assertFalse(enabled);
     }
 
@@ -305,6 +452,38 @@ public class FeatureToggleTests
         public boolean testSimpleFeatureEnabled()
         {
             return isSimpleFeatureEnabled.get();
+        }
+    }
+
+    private static class FunctionInjectionRunner
+    {
+        private final Function<Object, Boolean> isFunctionInjectionFeatureEnabled;
+
+        @Inject
+        public FunctionInjectionRunner(@FeatureToggle("FunctionInjectionFeature") Function<Object, Boolean> isFunctionInjectionFeatureEnabled)
+        {
+            this.isFunctionInjectionFeatureEnabled = isFunctionInjectionFeatureEnabled;
+        }
+
+        public boolean testFunctionInjectionFeatureEnabled()
+        {
+            return isFunctionInjectionFeatureEnabled.apply("string");
+        }
+    }
+
+    private static class FunctionInjectionWithStrategyRunner
+    {
+        private final Function<Object, Boolean> isFunctionInjectionWithStrategyEnabled;
+
+        @Inject
+        public FunctionInjectionWithStrategyRunner(@FeatureToggle("FunctionInjectionWithStrategy") Function<Object, Boolean> isFunctionInjectionWithStrategyEnabled)
+        {
+            this.isFunctionInjectionWithStrategyEnabled = isFunctionInjectionWithStrategyEnabled;
+        }
+
+        public boolean testFunctionInjectionWithStrategyEnabled()
+        {
+            return isFunctionInjectionWithStrategyEnabled.apply("string");
         }
     }
 }

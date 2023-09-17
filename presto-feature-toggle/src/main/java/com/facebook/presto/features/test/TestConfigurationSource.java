@@ -11,8 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.facebook.presto.features.config;
+package com.facebook.presto.features.test;
 
+import com.facebook.presto.features.config.DefaultFeatureToggleConfiguration;
 import com.facebook.presto.spi.features.ConfigurationSource;
 import com.facebook.presto.spi.features.FeatureConfiguration;
 import com.facebook.presto.spi.features.FeatureToggleConfiguration;
