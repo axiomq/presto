@@ -193,6 +193,7 @@
         <module>presto-singlestore</module>
         <module>presto-hana</module>
         <module>presto-feature-toggle</module>
+        <module>presto-feature-toggle-plugin</module>
     </modules>
 
     <dependencyManagement>
@@ -341,6 +342,12 @@
             <dependency>
                 <groupId>com.facebook.presto</groupId>
                 <artifactId>presto-feature-toggle</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.facebook.presto</groupId>
+                <artifactId>presto-feature-toggle-plugin</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

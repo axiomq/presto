@@ -140,6 +140,11 @@ public class CoordinatorModule
         // presto coordinator announcement
         discoveryBinder(binder).bindHttpAnnouncement("presto-coordinator");
 
+        featureToggleBinder(binder)
+                .featureId("query-logger")
+                .enabled(true)
+                .bind();
+
         // statement resource
         jsonCodecBinder(binder).bindJsonCodec(QueryInfo.class);
         jsonCodecBinder(binder).bindJsonCodec(TaskInfo.class);
