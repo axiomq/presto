@@ -55,7 +55,7 @@ public class LocalQueryProvider
     private final BlockEncodingSerde blockEncodingSerde;
     private final BoundedExecutor responseExecutor;
     private final ScheduledExecutorService timeoutExecutor;
-    private final RetryCircuitBreaker retryCircuitBreaker;
+    private final RetryCircuitBreakerInt retryCircuitBreaker;
 
     private final ConcurrentMap<QueryId, Query> queries = new ConcurrentHashMap<>();
     private final ScheduledExecutorService queryPurger = newSingleThreadScheduledExecutor(threadsNamed("execution-query-purger"));
@@ -68,7 +68,7 @@ public class LocalQueryProvider
             BlockEncodingSerde blockEncodingSerde,
             @ForStatementResource BoundedExecutor responseExecutor,
             @ForStatementResource ScheduledExecutorService timeoutExecutor,
-            RetryCircuitBreaker retryCircuitBreaker)
+            RetryCircuitBreakerInt retryCircuitBreaker)
     {
         this.queryManager = requireNonNull(queryManager, "queryManager is null");
         this.transactionManager = requireNonNull(transactionManager, "transactionManager is null");

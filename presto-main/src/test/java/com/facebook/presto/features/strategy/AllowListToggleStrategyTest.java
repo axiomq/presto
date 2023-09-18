@@ -152,7 +152,6 @@ public class AllowListToggleStrategyTest
                         // configure Feature Toggle evaluation strategy
                         .toggleStrategyConfig(ImmutableMap.of(AllowListToggleStrategy.ALLOW_LIST_SOURCE, ".*idea.*", AllowListToggleStrategy.ALLOW_LIST_USER, ".*prestodb"))
                         .bind(),
-
                 // AllowListToggleStrategy uses QueryManager to evaluate condition
                 binder -> binder.bind(QueryManager.class).to(StubQueryManager.class),
                 // we will set query id value using provider

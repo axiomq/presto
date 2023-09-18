@@ -108,7 +108,7 @@ class Query
     private final ScheduledExecutorService timeoutExecutor;
 
     private final PagesSerde serde;
-    private final RetryCircuitBreaker retryCircuitBreaker;
+    private final RetryCircuitBreakerInt retryCircuitBreaker;
 
     @GuardedBy("this")
     private OptionalLong nextToken = OptionalLong.of(0);
@@ -173,7 +173,7 @@ class Query
             Executor dataProcessorExecutor,
             ScheduledExecutorService timeoutExecutor,
             BlockEncodingSerde blockEncodingSerde,
-            RetryCircuitBreaker retryCircuitBreaker)
+            RetryCircuitBreakerInt retryCircuitBreaker)
     {
         Query result = new Query(session, slug, queryManager, transactionManager, exchangeClient, dataProcessorExecutor, timeoutExecutor, blockEncodingSerde, retryCircuitBreaker);
 
@@ -198,7 +198,7 @@ class Query
             Executor resultsProcessorExecutor,
             ScheduledExecutorService timeoutExecutor,
             BlockEncodingSerde blockEncodingSerde,
-            RetryCircuitBreaker retryCircuitBreaker)
+            RetryCircuitBreakerInt retryCircuitBreaker)
     {
         requireNonNull(session, "session is null");
         requireNonNull(slug, "slug is null");

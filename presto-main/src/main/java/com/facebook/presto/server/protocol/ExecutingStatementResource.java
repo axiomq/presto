@@ -14,13 +14,17 @@
 package com.facebook.presto.server.protocol;
 
 import com.facebook.airlift.concurrent.BoundedExecutor;
+import com.facebook.airlift.log.Logger;
 import com.facebook.airlift.stats.TimeStat;
 import com.facebook.presto.client.QueryResults;
+import com.facebook.presto.features.annotations.FeatureToggle;
+import com.facebook.presto.memory.context.ft.MemoryFeatureToggleInterface;
 import com.facebook.presto.server.ForStatementResource;
 import com.facebook.presto.server.ServerConfig;
 import com.facebook.presto.spi.QueryId;
 import com.google.common.collect.Ordering;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.inject.Provider;
 import io.airlift.units.DataSize;
 import io.airlift.units.Duration;
 import org.weakref.jmx.Managed;
@@ -42,6 +46,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 import static com.facebook.airlift.http.server.AsyncResponseHandler.bindAsyncResponse;
 import static com.facebook.presto.client.PrestoHeaders.PRESTO_PREFIX_URL;
 import static com.facebook.presto.server.protocol.QueryResourceUtil.abortIfPrefixUrlInvalid;
@@ -60,6 +67,8 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 @RolesAllowed(USER)
 public class ExecutingStatementResource
 {
+    private static final Logger log = Logger.get(ExecutingStatementResource.class);
+
     private static final Duration MAX_WAIT_TIME = new Duration(1, SECONDS);
     private static final Ordering<Comparable<Duration>> WAIT_ORDERING = Ordering.natural().nullsLast();
     private static final DataSize DEFAULT_TARGET_RESULT_SIZE = new DataSize(1, MEGABYTE);
@@ -68,26 +77,39 @@ public class ExecutingStatementResource
     private final BoundedExecutor responseExecutor;
     private final LocalQueryProvider queryProvider;
     private final boolean compressionEnabled;
-    private final QueryBlockingRateLimiter queryRateLimiter;
+    private final Provider<QueryRateLimiter> queryRateLimiter;
+    private final Supplier<Boolean> isQueryLoggerEnabled;
+    private final Function<Object, Boolean> isQueryCancelEnabled;
+    private final Supplier<Boolean> isMemoryFeatureEnabled;
+    private final Provider<MemoryFeatureToggleInterface> memoryFeatureToggleInterface;
 
     @Inject
     public ExecutingStatementResource(
             @ForStatementResource BoundedExecutor responseExecutor,
             LocalQueryProvider queryProvider,
             ServerConfig serverConfig,
-            QueryBlockingRateLimiter queryRateLimiter)
+            @FeatureToggle("query-rate-limiter") Provider<QueryRateLimiter> queryRateLimiter,
+            QueryRateLimiter xqueryRateLimiter,
+            @FeatureToggle("query-logger") Supplier<Boolean> isQueryLoggerEnabled,
+            @FeatureToggle("query-cancel") Function<Object, Boolean> isQueryCancelEnabled,
+            @FeatureToggle("memory-feature") Supplier<Boolean> isMemoryFeatureEnabled,
+            @FeatureToggle("memory-feature") Provider<MemoryFeatureToggleInterface> memoryFeatureToggleInterface)
     {
         this.responseExecutor = requireNonNull(responseExecutor, "responseExecutor is null");
         this.queryProvider = requireNonNull(queryProvider, "queryProvider is null");
         this.compressionEnabled = requireNonNull(serverConfig, "serverConfig is null").isQueryResultsCompressionEnabled();
         this.queryRateLimiter = requireNonNull(queryRateLimiter, "queryRateLimiter is null");
+        this.isQueryLoggerEnabled = isQueryLoggerEnabled;
+        this.isQueryCancelEnabled = isQueryCancelEnabled;
+        this.isMemoryFeatureEnabled = isMemoryFeatureEnabled;
+        this.memoryFeatureToggleInterface = memoryFeatureToggleInterface;
     }
 
     @Managed
     @Nested
     public TimeStat getRateLimiterBlockTime()
     {
-        return queryRateLimiter.getRateLimiterBlockTime();
+        return queryRateLimiter.get().getRateLimiterBlockTime();
     }
 
     @GET
@@ -118,6 +140,26 @@ public class ExecutingStatementResource
         abortIfPrefixUrlInvalid(xPrestoPrefixUrl);
 
         Query query = queryProvider.getQuery(queryId, slug);
+        QueryRateLimiter queryRateLimiter = this.queryRateLimiter.get();
+
+        if (isQueryLoggerEnabled.get()) {
+            log.info("query-logger is ENABLED");
+            log.info("DELETE localhost:8080/v1/statement/executing/%s/123456789?slug=%s", queryId.getId(), slug);
+        }
+        else {
+            log.info("query-logger is DISABLED");
+        }
+
+        if (isMemoryFeatureEnabled.get()) {
+            log.info("\"memory-feature\" is ENABLED");
+            log.info("MemoryFeatureToggleInterface class " + memoryFeatureToggleInterface.get().getClass().getName());
+        }
+        else {
+            log.info("\"memory-feature\" is DISABLED");
+        }
+
+        log.info("QueryRateLimiter class " + queryRateLimiter.getClass().getName());
+
         ListenableFuture<Double> acquirePermitAsync = queryRateLimiter.acquire(queryId);
         String effectiveFinalProto = proto;
         DataSize effectiveFinalTargetResultSize = targetResultSize;
@@ -143,7 +185,13 @@ public class ExecutingStatementResource
             @PathParam("token") long token,
             @QueryParam("slug") String slug)
     {
-        queryProvider.cancel(queryId, slug);
-        return Response.noContent().build();
+        boolean cancelEnabled = isQueryCancelEnabled.apply(queryId);
+        if (cancelEnabled) {
+            queryProvider.cancel(queryId, slug);
+            return Response.noContent().build();
+        }
+        else {
+            throw new RuntimeException("Cancel is not allowed!");
+        }
     }
 }

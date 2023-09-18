@@ -758,7 +758,7 @@ public class ServerMainModule
 
         // Feature Toggle
         configBinder(binder).bindConfig(FeatureToggleConfig.class);
-        install(new FeatureToggleModule());
+        binder.install(new FeatureToggleModule());
 
         // Thrift RPC
         binder.install(new DriftNettyServerModule());

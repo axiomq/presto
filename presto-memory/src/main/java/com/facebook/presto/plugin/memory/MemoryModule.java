@@ -20,6 +20,7 @@ import com.google.inject.Module;
 import com.google.inject.Scopes;
 
 import static com.facebook.airlift.configuration.ConfigBinder.configBinder;
+import static com.facebook.presto.features.binder.FeatureToggleBinder.featureToggleBinder;
 import static java.util.Objects.requireNonNull;
 
 public class MemoryModule
@@ -50,5 +51,7 @@ public class MemoryModule
         binder.bind(MemoryPageSourceProvider.class).in(Scopes.SINGLETON);
         binder.bind(MemoryPageSinkProvider.class).in(Scopes.SINGLETON);
         configBinder(binder).bindConfig(MemoryConfig.class);
+
+        featureToggleBinder(binder).featureId("memory-feature").bind();
     }
 }
